@@ -207,9 +207,9 @@ aura_messages = {
 function adapt_consider (name, line, wildcards)
   mob = consider_messages [name]
   if mob then
-	if string.find(line, "(Red Aura)") then	
+	if string.find(line, "(Red Aura)") or string.find(line, "(R)") then	
 		auramsg = aura_messages ["a"]
-	elseif string.find(line, "(Golden Aura)") then	
+	elseif string.find(line, "(Golden Aura)") or string.find(line, "(G)") then	
 		auramsg = aura_messages ["b"]
 	else 
 		auramsg = aura_messages ["c"]
