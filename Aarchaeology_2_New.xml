@@ -236,8 +236,8 @@ elseif sounds == "off" then
 	EnableTrigger("professor", false)
 end
 
-pamphlets = { ["Johnny's Appleseed"] = "1", ["An Ancient Skull"] = "2", ["A Golden Truffle"] = "3", ["An Ancient Game Token"] = "4", ["Neptune's Retired Staff"] = "5", ["Percival's Retired Crown"] = "6", ["Photo of an F1 Tornado"] = "7", ["A Ring of Thandeld"] = "8", ["Petrified Volcano Ash"] = "9", ["An Old Coyote's Tooth"] = "10", ["Dorothy's Lost Earring"] = "11", ["A Golden Cross"] = "12", ["Skeleton of a Goblin"] = "13", ["A Rusted Coin"] = "14", ["A Rusted Trumpet"] = "15", ["A Coffin Lid"] = "16", ["A Wedding Ring"] = "17", ["A Dinosaur Bone"] = "18", ["A Dragon's Tooth"] = "19", ["Unknown Element"] = "20", ["A Destroyed Mosaic"] = "21", ["A Silver Cross"] = "22", ["Lost Binoculars"] = "23", ["Pirate's Hat"] = "24", ["A Rusted Cleaver"] = "25", ["Wilted Rose"] = "26", ["Casino Chip"] = "27", ["Torn Visitor's Pass"] = "28", ["Ten-year-old Textbook"] = "29", ["Ivory Tusks"] = "30", ["An Oasis"] = "31", ["Skeleton of a Monkey"] = "32", ["An Ancient Stalactite"] = "33", ["Shoes of a Gnome"] = "34", ["A Torn Peace Agreement"] = "35", ["Chunk of an Iceberg"] = "36", ["Wings of a Harpy"] = "37", ["Petrified Tree Branch"] = "38", ["A Golden Leaf"] = "39", ["Writings of a Dream"] = "40", ["An Old Rope"] = "41", ["A Broken Twig"] = "42", ["Brick from a Castle"] = "43", ["A Rusted Belt Buckle"] = "44", ["A Biblical Textbook"] = "45", ["Frozen Flames"] = "46", ["Fox Tooth"] = "47", ["Picture of a Forest"] = "48", ["Moon in a Bottle"] = "49", ["Rotting Reed"] = "50" }
-values = { ["1"] = "10k", ["2"] = "10k", ["3"] = "10k", ["4"] = "10k", ["5"] = "10k", ["6"] = "50k", ["7"] = "50k", ["8"] = "50k", ["9"] = "50k", ["10"] = "50k", ["11"] = "100k", ["12"] = "100k", ["13"] = "100k", ["14"] = "100k", ["15"] = "100k", ["16"] = "250k", ["17"] = "250k", ["18"] = "250k", ["19"] = "250k", ["20"] = "250k", ["21"] = "500k", ["22"] = "500k", ["23"] = "500k", ["24"] = "500k", ["25"] = "500k", ["26"] = "750k", ["27"] = "750k", ["28"] = "750k", ["29"] = "750k", ["30"] = "750k", ["31"] = "1mil", ["32"] = "1mil", ["33"] = "1mil", ["34"] = "1mil", ["35"] = "1mil", ["36"] = "2mil", ["37"] = "2mil", ["38"] = "2mil", ["39"] = "2mil", ["40"] = "2mil", ["41"] = "2mil", ["42"] = "5mil", ["43"] = "5mil", ["44"] = "5mil", ["45"] = "10mil", ["46"] = "10mil", ["47"] = "TP", ["48"] = "TP", ["49"] = "TP", ["50"] = "TP" }
+pamphlets = { ["Johnny's Appleseed"] = "1", ["An Ancient Skull"] = "2", ["A Golden Truffle"] = "3", ["An Ancient Game Token"] = "4", ["Neptune's Retired Staff"] = "5", ["Percival's Retired Crown"] = "6", ["Photo of an F1 Tornado"] = "7", ["A Ring of Thandeld"] = "8", ["Petrified Volcano Ash"] = "9", ["An Old Coyote's Tooth"] = "10", ["Dorothy's Lost Earring"] = "11", ["A Golden Cross"] = "12", ["Skeleton of a Goblin"] = "13", ["A Rusted Coin"] = "14", ["A Rusted Trumpet"] = "15", ["A Coffin Lid"] = "16", ["A Wedding Ring"] = "17", ["A Dinosaur Bone"] = "18", ["A Dragon's Tooth"] = "19", ["Unknown Element"] = "20", ["A Destroyed Mosaic"] = "21", ["A Silver Cross"] = "22", ["Lost Binoculars"] = "23", ["Pirate's Hat"] = "24", ["A Rusted Cleaver"] = "25", ["Wilted Rose"] = "26", ["Casino Chip"] = "27", ["Torn Visitor's Pass"] = "28", ["Ten-year-old Textbook"] = "29", ["Ivory Tusks"] = "30", ["An Oasis"] = "31", ["Skeleton of a Monkey"] = "32", ["An Ancient Stalactite"] = "33", ["Shoes of a Gnome"] = "34", ["A Torn Peace Agreement"] = "35", ["Chunk of an Iceberg"] = "36", ["Wings of a Harpy"] = "37", ["Petrified Tree Branch"] = "38", ["A Golden Leaf"] = "39", ["Writings of a Dream"] = "40", ["An Old Rope"] = "41", ["A Broken Twig"] = "42", ["Brick from a Castle"] = "43", ["A Rusted Belt Buckle"] = "44", ["A Biblical Textbook"] = "45", ["Frozen Flames"] = "46", ["Fox Tooth"] = "47", ["Picture of a Forest"] = "48", ["Moon in a Bottle"] = "49", ["Rotting Reed"] = "50", ["A Wild Card"] = 51 }
+values = { ["1"] = "10k", ["2"] = "10k", ["3"] = "10k", ["4"] = "10k", ["5"] = "10k", ["6"] = "50k", ["7"] = "50k", ["8"] = "50k", ["9"] = "50k", ["10"] = "50k", ["11"] = "100k", ["12"] = "100k", ["13"] = "100k", ["14"] = "100k", ["15"] = "100k", ["16"] = "250k", ["17"] = "250k", ["18"] = "250k", ["19"] = "250k", ["20"] = "250k", ["21"] = "500k", ["22"] = "500k", ["23"] = "500k", ["24"] = "500k", ["25"] = "500k", ["26"] = "750k", ["27"] = "750k", ["28"] = "750k", ["29"] = "750k", ["30"] = "750k", ["31"] = "1mil", ["32"] = "1mil", ["33"] = "1mil", ["34"] = "1mil", ["35"] = "1mil", ["36"] = "2mil", ["37"] = "2mil", ["38"] = "2mil", ["39"] = "2mil", ["40"] = "2mil", ["41"] = "2mil", ["42"] = "5mil", ["43"] = "5mil", ["44"] = "5mil", ["45"] = "10mil", ["46"] = "10mil", ["47"] = "TP", ["48"] = "TP", ["49"] = "TP", ["50"] = "TP", ["51"] = "ANY" }
 
 --local tots = 0
 --for i, p in pairs(values) do
@@ -392,13 +392,13 @@ end
 
 function bid_aarch(name, line, args)
 	local status = find_status(trim(args[3]))
-	local turnin = find_turnin(trim(args[3]))
+	local turnin = find_turnin(trim(args[3])) or "ANY"
 	ColourNote("red", "", args[1], "lightgray", "", " - "..args[2], "red", "", " (", "yellow", "", "Aarchaeology", "red", "", ") ", "white", "", args[3], "lightgray", "", "   1 ", "red", "", " "..args[4], "lime", "", " "..args[5], "magenta", "", " [", "cyan", "", status, "magenta", "", "] ", "magenta", "", "[", "cyan", "", turnin, "magenta", "", "]")
 end
 
 function lbid_aarch(name, line, args)
 	local status = find_status(trim(args[2]))
-	local turnin = find_turnin(trim(args[2]))
+	local turnin = find_turnin(trim(args[2])) or "ANY"
 	ColourNote("white", "", " "..args[1], "red", "", " (", "yellow", "", "Aarchaeology", "red", "", ") ", "white", "", args[2], "lightgray", "", "   1 ", "red", "", args[3], "yellow", "", "Gold"..args[4]..args[5], "red", "", args[6], "lightgray", "", " "..args[7].."   "..args[8], "magenta", "", " [", "cyan", "", status, "magenta", "", "] ", "magenta", "", "[", "cyan", "", turnin, "magenta", "", "]")
 end
 
@@ -480,10 +480,13 @@ function aarch_report(name, line, args)
 	local pcs = {}
 
 	for x, _ in pairs(pamphlets) do
+		if x == "51" then goto continue end
+		if x == "A Wild Card" then goto continue end
 		if my_aarch[x] == nil then
 			cnt = cnt + 1
 			table.insert(pcs, x)
 		end
+		::continue::
 	end
 	
 	if cnt == 0 then
@@ -503,6 +506,9 @@ function aarch_report(name, line, args)
 		for i, v in ipairs(pcs) do
 			local turnin = find_turnin(trim(v))
 			local archnum = tonumber(pamphlets[v])
+			if archnum == 51 then
+				goto skiploop
+			end
 			local spc = ""
 			if archnum < 10 then
 				spc = " "
@@ -516,6 +522,7 @@ function aarch_report(name, line, args)
 				x = 0
 				Tell("\n ")
 			end
+			::skiploop::
 		end
 		
 		ColourNote("magenta", "", "\n------------------------------------------------------------------------------------")
