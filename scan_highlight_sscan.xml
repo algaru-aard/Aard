@@ -39,6 +39,16 @@
 
 <triggers>
   <trigger
+   enabled="n"
+   match="^(Not while you are fighting!|You dream about being able to scan\.|You can't scan while resting\.)$"
+   script="cancel_special"
+   omit_from_output="n"
+   name="scan_while_occupied"
+   sequence="100"
+   regexp="y"
+   group="cancel_special"
+  />
+  <trigger
    enabled="y"
    match="{scan}"
    script="togglescan"
@@ -65,15 +75,6 @@
    regexp="y"
    sequence="100"
    group="scan"
-   />
-  <trigger
-	enabled="n"
-	match="^$"
-	name="hideblankline"
-	omit_from_output="y"
-	regexp="y"
-	sequence="90"
-	group="scan"
    />
 </triggers>
 
@@ -104,7 +105,14 @@ questmob = {}
 function toggle_special_scan()
 	--print('toggling special scan')
 	special_scan = true
+    phelper:enabletriggroup('cancel_special', true)
 	Execute("scan")
+end
+
+function cancel_special ()
+	--print('disabling special scan')
+	special_scan = false
+	phelper:enabletriggroup('cancel_special', false)
 end
 
 
