@@ -74,29 +74,6 @@ or to compare two flags against each other.
 <script>
 <![CDATA[
 
-flagtable = {
-	["polished"] 	= "1",
-	["enhanced"] 	= "2",
-	["burnished"] 	= "3",
-	["shiny"] 		= "4",
-	["vibrant"] 	= "5",
-	["sparkling"] 	= "6",
-	["gleaming"] 	= "7",
-	["shimmering"] 	= "8",
-	["dazzling"] 	= "9",
-	["brilliant"] 	= "10",
-	["majestic"] 	= "11",
-	["radiant"] 	= "12",
-	["wondrous"] 	= "13",
-	["exalted"] 	= "14",
-	["eternal"] 	= "15",
-	["mythical"] 	= "16",
-	["epic"] 		= "17",
-	["legendary"] 	= "18",
-	["fabled"] 		= "19",
-	["godly"] 		= "20"
-}
-
 flaglist = {
 	"Polished",
 	"Enhanced",
