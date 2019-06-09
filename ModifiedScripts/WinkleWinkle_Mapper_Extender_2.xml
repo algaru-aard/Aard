@@ -16,6 +16,20 @@
 <description trim="n">
 <![CDATA[
 
+Algaru's notes
+----------------------------
+This was based on the fixed version of S&D 2.8 provided by Nokfah.
+Changes between this version and Nokfah's (available here: https://goo.gl/a5wp6n):
+* When cp mobs are in the same area as you, those mobs are highlighted in
+  blue in the cp window
+* Added "ma" for mapper area search, and "mf" for mapper world search. This
+  functionality already existed but I had a separate alias elsewhere.
+* Created a separate query for mob searches that would only include exact room
+  name matches, instead of the fuzzy logic used by room name search
+* Room searches will display any custom notes you have set for the room 
+  in-line
+----------------------------
+
 MAPPER EXTENDER USAGE:
 
 ===== SHOW THIS HELP =============>
@@ -1288,18 +1302,6 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 		"LEFT OUTER JOIN bookmarks b ON r.uid = b.uid " ..
 		"WHERE r.name = %s " ..
 		"AND (%s = 'all' OR (a.name = %s OR r.area = %s)) " ..
-		
---		"UNION " ..
---		
---		"SELECT r.uid, r.name, info, r.area, " ..
---		"ifnull(a.name, r.area) as area_name, 0 as DisplayOrder, " .. 
---		"ifnull(b.notes, '') as notes " ..
---		"FROM rooms r " ..
---		"LEFT OUTER JOIN areas a ON r.area = a.uid " ..
---		"LEFT OUTER JOIN bookmarks b ON r.uid = b.uid " ..
---		"WHERE r.name <> %s " ..
---		"AND r.name LIKE %s " .. 
---		"AND (%s = 'all' OR (a.name = %s OR r.area = %s)) " ..
 		"ORDER BY Area, DisplayOrder DESC "
         
 	function search_rooms(room, searchType, fullMobName)
