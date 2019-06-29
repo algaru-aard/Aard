@@ -21,6 +21,10 @@
 Use this tool to look up how useful a particular bonusloot flag is, 
 or to compare two flags against each other.
 
+  *** Do NOT use this blindly! This is meant only as a reference. There is a huge *** 
+  *** amount of variance from item to item. This will apply most directly for     ***
+  *** weapons but there are no guarantees to the ordering.                        ***
+
   bloot                     display a table of known bonus loot flags
   bloot <flag>              display information about which tier a particular flag is in
   bloot <flag1> <flag2>     tell you which flag is better, and how far apart they are. 
@@ -74,27 +78,36 @@ or to compare two flags against each other.
 <script>
 <![CDATA[
 
+-- Tier list is courtesy of Khadaji. Thank you Khadaji!
 flaglist = {
-	"Polished",
-	"Enhanced",
-	"Burnished",
-	"Shiny",
-	"Vibrant",
-	"Sparkling",
-	"Gleaming",
-	"Shimmering",
-	"Dazzling",
-	"Brilliant",
-	"Majestic",
-	"Radiant",
-	"Wondrous",
-	"Exalted",
-	"Eternal",
-	"Mythical",
-	"Epic",
-	"Legendary",
-	"Fabled",
-	"Godly"
+    -- green and white
+	"Polished",     -- 1
+	"Enhanced",     -- 2
+	"Burnished",    -- 3
+	"Shiny",        -- 4
+	"Vibrant",      -- 5
+	"Sparkling",    -- 6
+	"Gleaming",     -- 7
+	"Shimmering",   -- 8
+	"Dazzling",     -- 9
+	"Brilliant",    -- 10
+    
+    -- red and white
+   	"Radiant",      -- 11
+	"Majestic",     -- 12
+	"Wondrous",     -- 13
+	"Exalted",      -- 14
+	"Eternal",      -- 15
+    
+    -- yellow and white
+   	"Legendary",    -- 16
+	"Epic",         -- 17
+	"Mythical",     -- 18
+	"Fabled",       -- 19
+    "Divine",       -- 20
+    
+    -- white and red
+	"Godly"         -- 21
 }
 
 function OnHelp ()
@@ -169,14 +182,22 @@ function printTable(a, b)
 	i = 1
 	
 	while i < #flaglist + 1 do
-		prefix = "   "
-		prefcolor = "white"
-		pcolor = "red"
-		name = flaglist[i] or ""
+        bcolor = "white"        -- for the brackets surrounding the word
+        
 		
-		if i < 12 then
-			pcolor = "green"
-		end
+        if i == 21 then
+            pcolor = "white"
+            bcolor = "red"
+        elseif i >= 16 then
+            pcolor = "yellow"
+            bcolor = "white"
+        elseif i >= 11 then
+            pcolor = "red"
+            bcolor = "white"
+        else
+            pcolor = "green"
+            bcolor = "white"
+        end
 		
 		if a and a == i then
 			prefix = " * "
@@ -186,7 +207,7 @@ function printTable(a, b)
 			prefix = " * "
 		end
 		
-		ColourNote(prefcolor, "", prefix, pcolor, "", "(", "white", "", name, pcolor, "", ")")
+		ColourNote(prefcolor, "", prefix, pcolor, "", "(", bcolor, "", name, pcolor, "", ")")
 		i = i + 1
 	end
 end
