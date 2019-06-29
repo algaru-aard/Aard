@@ -47,32 +47,32 @@ or to compare two flags against each other.
      enabled="y"
     >
     </alias>
-	<alias
-	match="^[ ]*bloot[ ]*$"
-	regexp="y"
-	enabled="y"
-	sequence="100"
-	script="listAll"
-	>
-	</alias>
-
-	<alias
-	match="^[ ]*bloot[ ]*([A-Za-z]+)[ ]*$"
-	regexp="y"
-	enabled="y"
-	sequence="100"
-	script="listOne"
-	>
-	</alias>
+    <alias
+    match="^[ ]*bloot[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="100"
+    script="listAll"
+    >
+    </alias>
 
     <alias
-	match="^[ ]*bloot[ ]*([A-Za-z]+)[ ]+([A-Za-z]+)[ ]*$"
-	regexp="y"
-	enabled="y"
-	sequence="100"
-	script="compareTwo"
-	>
-	</alias>
+    match="^[ ]*bloot[ ]*([A-Za-z]+)[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="100"
+    script="listOne"
+    >
+    </alias>
+
+    <alias
+    match="^[ ]*bloot[ ]*([A-Za-z]+)[ ]+([A-Za-z]+)[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="100"
+    script="compareTwo"
+    >
+    </alias>
 </aliases>
 
 <script>
@@ -81,33 +81,33 @@ or to compare two flags against each other.
 -- Tier list is courtesy of Khadaji. Thank you Khadaji!
 flaglist = {
     -- green and white
-	"Polished",     -- 1
-	"Enhanced",     -- 2
-	"Burnished",    -- 3
-	"Shiny",        -- 4
-	"Vibrant",      -- 5
-	"Sparkling",    -- 6
-	"Gleaming",     -- 7
-	"Shimmering",   -- 8
-	"Dazzling",     -- 9
-	"Brilliant",    -- 10
-    
+    "Polished",     -- 1
+    "Enhanced",     -- 2
+    "Burnished",    -- 3
+    "Shiny",        -- 4
+    "Vibrant",      -- 5
+    "Sparkling",    -- 6
+    "Gleaming",     -- 7
+    "Shimmering",   -- 8
+    "Dazzling",     -- 9
+    "Brilliant",    -- 10
+
     -- red and white
-   	"Radiant",      -- 11
-	"Majestic",     -- 12
-	"Wondrous",     -- 13
-	"Exalted",      -- 14
-	"Eternal",      -- 15
-    
+    "Radiant",      -- 11
+    "Majestic",     -- 12
+    "Wondrous",     -- 13
+    "Exalted",      -- 14
+    "Eternal",      -- 15
+
     -- yellow and white
-   	"Legendary",    -- 16
-	"Epic",         -- 17
-	"Mythical",     -- 18
-	"Fabled",       -- 19
+    "Legendary",    -- 16
+    "Epic",         -- 17
+    "Mythical",     -- 18
+    "Fabled",       -- 19
     "Divine",       -- 20
-    
+
     -- white and red
-	"Godly"         -- 21
+    "Godly"         -- 21
 }
 
 function OnHelp ()
@@ -203,13 +203,13 @@ function printTable(a, b)
             bcolor = "white"
         end
 		
-		if a and a == i then
-			prefix = " * "
-		end
-		
-		if b and b == i then
-			prefix = " * "
-		end
+        if a and a == i then
+            prefix = " * "
+        end
+
+        if b and b == i then
+            prefix = " * "
+        end
 		
 		ColourNote(prefcolor, "", prefix, pcolor, "", "(", bcolor, "", name, pcolor, "", ")")
 		i = i + 1
