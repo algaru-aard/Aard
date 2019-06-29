@@ -182,8 +182,12 @@ function printTable(a, b)
 	i = 1
 	
 	while i < #flaglist + 1 do
+        prefix = "   "
+        prefcolor = "white"     -- for the * in comparison
+        pcolor = "red"          -- for the flag itself
         bcolor = "white"        -- for the brackets surrounding the word
         
+        name = flaglist[i] or ""
 		
         if i == 21 then
             pcolor = "white"
