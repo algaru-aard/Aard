@@ -237,6 +237,7 @@ elseif sounds == "off" then
 end
 
 pamphlets = { ["Johnny's Appleseed"] = "1", ["An Ancient Skull"] = "2", ["A Golden Truffle"] = "3", ["An Ancient Game Token"] = "4", ["Neptune's Retired Staff"] = "5", ["Percival's Retired Crown"] = "6", ["Photo of an F1 Tornado"] = "7", ["A Ring of Thandeld"] = "8", ["Petrified Volcano Ash"] = "9", ["An Old Coyote's Tooth"] = "10", ["Dorothy's Lost Earring"] = "11", ["A Golden Cross"] = "12", ["Skeleton of a Goblin"] = "13", ["A Rusted Coin"] = "14", ["A Rusted Trumpet"] = "15", ["A Coffin Lid"] = "16", ["A Wedding Ring"] = "17", ["A Dinosaur Bone"] = "18", ["A Dragon's Tooth"] = "19", ["Unknown Element"] = "20", ["A Destroyed Mosaic"] = "21", ["A Silver Cross"] = "22", ["Lost Binoculars"] = "23", ["Pirate's Hat"] = "24", ["A Rusted Cleaver"] = "25", ["Wilted Rose"] = "26", ["Casino Chip"] = "27", ["Torn Visitor's Pass"] = "28", ["Ten-year-old Textbook"] = "29", ["Ivory Tusks"] = "30", ["An Oasis"] = "31", ["Skeleton of a Monkey"] = "32", ["An Ancient Stalactite"] = "33", ["Shoes of a Gnome"] = "34", ["A Torn Peace Agreement"] = "35", ["Chunk of an Iceberg"] = "36", ["Wings of a Harpy"] = "37", ["Petrified Tree Branch"] = "38", ["A Golden Leaf"] = "39", ["Writings of a Dream"] = "40", ["An Old Rope"] = "41", ["A Broken Twig"] = "42", ["Brick from a Castle"] = "43", ["A Rusted Belt Buckle"] = "44", ["A Biblical Textbook"] = "45", ["Frozen Flames"] = "46", ["Fox Tooth"] = "47", ["Picture of a Forest"] = "48", ["Moon in a Bottle"] = "49", ["Rotting Reed"] = "50", ["A Wild Card"] = 51 }
+
 values = { ["1"] = "10k", ["2"] = "10k", ["3"] = "10k", ["4"] = "10k", ["5"] = "10k", ["6"] = "50k", ["7"] = "50k", ["8"] = "50k", ["9"] = "50k", ["10"] = "50k", ["11"] = "100k", ["12"] = "100k", ["13"] = "100k", ["14"] = "100k", ["15"] = "100k", ["16"] = "250k", ["17"] = "250k", ["18"] = "250k", ["19"] = "250k", ["20"] = "250k", ["21"] = "500k", ["22"] = "500k", ["23"] = "500k", ["24"] = "500k", ["25"] = "500k", ["26"] = "750k", ["27"] = "750k", ["28"] = "750k", ["29"] = "750k", ["30"] = "750k", ["31"] = "1mil", ["32"] = "1mil", ["33"] = "1mil", ["34"] = "1mil", ["35"] = "1mil", ["36"] = "2mil", ["37"] = "2mil", ["38"] = "2mil", ["39"] = "2mil", ["40"] = "2mil", ["41"] = "2mil", ["42"] = "5mil", ["43"] = "5mil", ["44"] = "5mil", ["45"] = "10mil", ["46"] = "10mil", ["47"] = "TP", ["48"] = "TP", ["49"] = "TP", ["50"] = "TP", ["51"] = "ANY" }
 
 --local tots = 0
@@ -478,6 +479,7 @@ end
 function aarch_report(name, line, args)
 	local cnt = 0
 	local pcs = {}
+    local new_turnin = {}
 
 	for x, _ in pairs(pamphlets) do
 		if x == "51" then goto continue end
@@ -514,7 +516,7 @@ function aarch_report(name, line, args)
 				spc = " "
 			end
 			x = x + 1
-			ColourTell("magenta", "", " [", "cyan", "", "#" .. archnum .. spc, "magenta", "", "]	", "white", "", v, "magenta", "", " [", "cyan", "", turnin, "magenta", "", "]" )
+			ColourTell("magenta", "", " [", "cyan", "", "#" .. archnum .. spc, "magenta", "", "]	", "white", "", string.format("%-25s", v), "magenta", "", " [", "cyan", "", string.format("%05s", turnin), "magenta", "", "]" )
 			if i < table.getn(pcs) then
 				ColourTell("yellow", "", "")
 			end
@@ -535,8 +537,11 @@ function aarch_report(name, line, args)
 	local dcnt = 0
 	local totalval = 0
 	local totaltp = 0
+    local newtotalval = 0
+    local newtotaltp = 0
 	local cval = 0
 	local px = 0
+    local newpx = 0
 	for pc, v in pairs(aarch_pcs) do
 		px = px + v
 		cval = tostring(values[pamphlets[pc]])
@@ -567,19 +572,29 @@ function aarch_report(name, line, args)
 					pamsuff = "s"
 				end
 				dcnt = dcnt + 1
-				ColourNote("white", "", " "..pc, "magenta", "", " - ", "yellow", "", v.." Extra Piece"..pcsuff..", "..vv.." Pamphlet"..pamsuff.." ", "magenta", "", "[", "cyan", "", turnin, "magenta", "", "]")
+				ColourNote("white", "", " ".. string.format("%-24s", pc), "magenta", "", " - ", "yellow", "", string.format("%-16s", v.." Extra Piece"..pcsuff) ..", ".. string.format("%-12s", vv.." Pamphlet"..pamsuff), "magenta", "", "[", "cyan", "", string.format("%5s", turnin), "magenta", "", "]")
 			end
 		end
 		if (fnd == false) and (v > 1) then
 			dcnt = dcnt + 1
-			ColourNote("white", "", " "..pc, "magenta", "", " - ", "yellow", "", (v - 1).." Extra Piece"..pcsuff.." ", "magenta", "", "[", "cyan", "", turnin, "magenta", "", "]")
-		end
+			ColourNote("white", "", " ".. string.format("%-24s", pc), "magenta", "", " - ", "yellow", "", string.format("%-30s", (v - 1).." Extra Piece"..pcsuff.." "), "magenta", "", "[", "cyan", "", string.format("%5s", turnin), "magenta", "", "]")
+		elseif (fnd == false) and (v <= 1) then
+            newpx = newpx + 1
+            new_turnin[pc] = cval
+            if cval == "TP" then
+                newtotaltp = newtotaltp + v
+            else
+                newtotalval = newtotalval + (v*tonumber(cval))
+            end
+        end
 	end
+    
 	if dcnt == 0 then
 		ColourNote("yellow", "", "  None.")
 	end
 	ColourNote("magenta", "", "------------------------------------------------------------------------------------")
-	ColourNote("magenta", "", "------------------------------------------------------------------------------------")
+   	ColourNote("magenta", "", "------------------------------------------------------------------------------------")       
+
 	if totalval > 0 or totaltp > 0 then
 		ColourTell("silver", "", " Value of ", "white", "", px.." ", "red", "", "(", "yellow", "", "Aarchaeology", "red", "", ")", "silver", "", " pieces not turned in yet:  ")
 	end
@@ -591,6 +606,29 @@ function aarch_report(name, line, args)
 	end
 	if totaltp > 0 then
 		ColourTell("white", "", totaltp, "lime", "", " TP")
+	end    
+    
+	if newtotalval > 0 or totaltp > 0 then
+    	ColourNote("magenta", "", "\n------------------------------------------------------------------------------------")   
+        ColourNote("magenta", "", "------------------------------------------------------------------------------------")        
+        ColourNote("cyan", "", " New Pieces:")
+        ColourNote("magenta", "", "------------------------------------------------------------------------------------")
+        for pc, _ in pairs(new_turnin) do
+            local turnin = find_turnin(trim(pc))
+            ColourNote("magenta", "", "[", "cyan", "", string.format("%05s", turnin), "magenta", "", "]", "white", "", " "..pc)
+        end
+        
+    	ColourNote("magenta", "", "\n------------------------------------------------------------------------------------")       
+		ColourTell("silver", "", " Value of ", "white", "", newpx.." ", "red", "", "(", "yellow", "", "Aarchaeology", "red", "", ")", "silver", "", " NEW pieces not turned in yet:  ")
+	end
+	if newtotalval > 0 then
+		ColourTell("white", "", format_pos_number(newtotalval), "gold", "", " Gold")
+	end
+	if newtotalval > 0 and newtotaltp > 0 then
+		ColourTell("silver", "", "  and  ")
+	end
+	if newtotaltp > 0 then
+		ColourTell("white", "", newtotaltp, "lime", "", " TP")
 	end
 	ColourNote("magenta", "", "\n------------------------------------------------------------------------------------\n\n")
 	
@@ -621,7 +659,7 @@ function go()
 	SendNoEcho("echo @YLooked in Aarch Bags!")
 end
 
-function print_r ( t )  
+function dumper ( t )  
     local print_r_cache={}
     local function sub_print_r(t,indent)
         if (print_r_cache[tostring(t)]) then
