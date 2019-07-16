@@ -505,7 +505,9 @@ function aarch_report(name, line, args)
 		ColourNote("magenta", "", "------------------------------------------------------------------------------------")
 		local x = 0
 		Tell(" ")
-		for i, v in ipairs(pcs) do
+        
+        table.sort (pcs, function (a, b) return tonumber(pamphlets[a]) < tonumber(pamphlets[b]) end )        
+        for i, v in ipairs(pcs) do
 			local turnin = find_turnin(trim(v))
 			local archnum = tonumber(pamphlets[v])
 			if archnum == 51 then
@@ -542,6 +544,7 @@ function aarch_report(name, line, args)
 	local cval = 0
 	local px = 0
     local newpx = 0
+    
 	for pc, v in pairs(aarch_pcs) do
 		px = px + v
 		cval = tostring(values[pamphlets[pc]])
@@ -701,7 +704,6 @@ local clean_file = string.gsub(sound_file, "\\\\", "\\")
 ColourNote("yellow", "", "  Aarch alert sound file: ", "cyan", "", clean_file)
 display_bags()
 ColourNote("orange", "", "-------------------------------------------------")
-
 
 
 ]]>
