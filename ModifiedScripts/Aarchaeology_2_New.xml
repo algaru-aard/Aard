@@ -611,7 +611,7 @@ function aarch_report(name, line, args)
         ColourTell("white", "", totaltp, "lime", "", " TP")
     end    
     
-    if newtotalval > 0 or totaltp > 0 then
+    if newtotalval > 0 or newtotaltp > 0 then
         ColourNote("magenta", "", "\n------------------------------------------------------------------------------------")   
         ColourNote("magenta", "", "------------------------------------------------------------------------------------")        
         ColourNote("cyan", "", " New Pieces:")
