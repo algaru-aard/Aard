@@ -102,7 +102,7 @@ aarch sound <file.wav>          Change the filename of the Aarch Professor alert
   </trigger>
   <trigger
    enabled="y"
-   match="^ (\d+) \(Aarchaeology\) (.+)   1 ([\* ])?Gold(\s+)([\d,]+)(\*)? ([0-9 ]+)   (.+)$"
+   match="^(\s+\d+) \(Aarchaeology\) (.+)   1 ([\* ])?Gold(\s+)([\d,]+)(\*)? ([0-9 ]+)   (.+)$"
    omit_from_output="y"
    regexp="y"
    script="lbid_aarch"
@@ -400,7 +400,7 @@ end
 function lbid_aarch(name, line, args)
     local status = find_status(trim(args[2]))
     local turnin = find_turnin(trim(args[2])) or "ANY"
-    ColourNote("white", "", " "..args[1], "red", "", " (", "yellow", "", "Aarchaeology", "red", "", ") ", "white", "", args[2], "lightgray", "", "   1 ", "red", "", args[3], "yellow", "", "Gold"..args[4]..args[5], "red", "", args[6], "lightgray", "", " "..args[7].."   "..args[8], "magenta", "", " [", "cyan", "", status, "magenta", "", "] ", "magenta", "", "[", "cyan", "", turnin, "magenta", "", "]")
+    ColourNote("white", "", ""..args[1], "red", "", " (", "yellow", "", "Aarchaeology", "red", "", ") ", "white", "", args[2], "lightgray", "", "   1 ", "red", "", args[3], "yellow", "", "Gold"..args[4]..args[5], "red", "", args[6], "lightgray", "", " "..args[7].."   "..args[8], "magenta", "", " [", "cyan", "", status, "magenta", "", "] ", "magenta", "", "[", "cyan", "", turnin, "magenta", "", "]")
 end
 
 function display_aarch(name, line, args)

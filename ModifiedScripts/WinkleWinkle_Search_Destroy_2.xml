@@ -126,7 +126,17 @@ Quick Scan
 		script="auto_kill"
 	>
 	</alias>
-	
+
+	<alias
+		name="AutoBS"
+		match="^bs$"
+		regexp="y"
+		enabled="y"
+		sequence="100"
+		script="auto_bs"
+	>
+	</alias>
+    
 	<alias
 		name="AutoHunt"
 		match="^ah (?<mob>.+)$"
@@ -509,6 +519,14 @@ Quick Scan
 		end
 	end
 
+	function auto_bs(name, line, wildcards)
+		if (get_short_mob_name() == nil or get_short_mob_name() == "") then
+			ColourNote("darkorange", "", "I don't know which mob to try and kill?")
+		else
+			Execute("backstab " .. get_short_mob_name())
+		end
+	end    
+    
 	local qw = {
 			full_name = "",
 			short_name = "",

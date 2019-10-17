@@ -669,7 +669,7 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 		" SELECT -1 as room, '' as roomName, uid as area, name as areaName, 'area' as type, '' as info " ..
 		" FROM areas " ..
 		" WHERE name = %s " ..
-		" ORDER BY type ASC "
+		" ORDER BY type, room ASC "
 
 	function get_rooms_areas(list, listIndex, place, mobName, qty, isDead)
 
@@ -1291,7 +1291,7 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 		"WHERE r.name <> %s " ..
 		"AND r.name LIKE %s " .. 
 		"AND (%s = 'all' OR (a.name = %s OR r.area = %s)) " ..
-		"ORDER BY Area, DisplayOrder DESC "
+		"ORDER BY Area, DisplayOrder DESC, uid ASC "
 
 	local search_mobs_sql = 
 		"SELECT r.uid as uid, r.name as name, info, r.area as area, " ..
@@ -1302,7 +1302,7 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 		"LEFT OUTER JOIN bookmarks b ON r.uid = b.uid " ..
 		"WHERE r.name = %s " ..
 		"AND (%s = 'all' OR (a.name = %s OR r.area = %s)) " ..
-		"ORDER BY Area, DisplayOrder DESC "
+		"ORDER BY Area, DisplayOrder DESC, uid ASC "
         
 	function search_rooms(room, searchType, fullMobName)
 		DebugNote("search_rooms(" .. room .."," .. searchType .. "," .. fullMobName .. ")")
@@ -1470,7 +1470,7 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 			end
 			
 			Hyperlink("mapper where " .. value.uid, 
-				"   {?}", 
+				"   {" .. mapper_area_index .. "}", 
 				"click for speedwalk to this room", 
 				"LightSteelBlue ", 
 				"black", 
