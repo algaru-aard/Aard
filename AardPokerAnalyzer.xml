@@ -189,43 +189,62 @@ end
 
 
 function print_inventory()
-    ColourNote("magenta", "", "+----------------------------------------------------------------------+")
+    four_of_a_kind_count = 0;
+    
+    ColourNote("magenta", "", "+-----------------------------------------------------------+")
     ColourNote(
-      "magenta",    "", "|   Card        |    ",
-      "cyan",       "", "Air    ",
-      "magenta",    "", "|    ",
-      "#808000",    "", "Earth    ",
-      "magenta",    "", "|     ",
-      "red",        "", "Fire     ",
-      "magenta",    "", "|    ",
-      "#008080",    "", "Water    ",
+      "magenta",    "", "| Card      |  ",
+      "cyan",       "", "Air  ",
+      "magenta",    "", "|  ",
+      "#808000",    "", "Earth  ",
+      "magenta",    "", "|  ",
+      "red",        "", "Fire   ",
+      "magenta",    "", "|  ",
+      "#008080",    "", "Water  ",
+      "magenta",    "", "|  ",
+      "white",      "", "Total  ",
       "magenta",    "", "|")
 
-    ColourNote("magenta", "", "+----------------------------------------------------------------------+")
+    ColourNote("magenta", "", "+-----------------------------------------------------------+")
 
 
     for _, value in ipairs(card_order) do
-        acount = string.format("     %-6d", get_card_count("Air", value))
-        ecount = string.format("      %-7d", get_card_count("Earth", value))
-        fcount = string.format("       %-7d", get_card_count("Fire", value))
-        wcount = string.format("      %-7d", get_card_count("Water", value))
-        value = string.format("   %-12s", value)
+        acount = get_card_count("Air", value)
+        ecount = get_card_count("Earth", value)
+        fcount = get_card_count("Fire", value)
+        wcount = get_card_count("Water", value)
+        total = acount + ecount + fcount + wcount
+        
+        f_acount = format_count(acount, 7)
+        f_ecount = format_count(ecount, 9)
+        f_fcount = format_count(fcount, 9)
+        f_wcount = format_count(wcount, 9)
+        f_total  = format_count( total, 9)
+
+        four_of_a_kind_count = four_of_a_kind_count + math.floor(f_total / 4) 
+        
+        value = string.format(" %-10s", value)
    
         ColourNote(
             "magenta",  "", "|",
             "white",    "", value,
             "magenta",  "", "|",
-            "white",    "", acount,
+            "white",    "", f_acount,
             "magenta",  "", "|",
-            "white",    "", ecount,
+            "white",    "", f_ecount,
             "magenta",  "", "|",
-            "white",    "", fcount,
+            "white",    "", f_fcount,
             "magenta",  "", "|",
-            "white",    "", wcount,
+            "white",    "", f_wcount,
+            "magenta",  "", "|",
+            "white",    "", f_total,
             "magenta",  "", "|")
     end
     
-    ColourNote("magenta", "", "+----------------------------------------------------------------------+")
+    ColourNote("magenta", "", "+-----------------------------------------------------------+\n")
+    
+    ColourNote("magenta", "", "Four of a kind hands: ", "white", "", four_of_a_kind_count)   
+    ColourNote("magenta", "", "Quest Points: ", "white", "", four_of_a_kind_count * 35)   
 end
 
 function get_card_count(suit, value)
@@ -233,7 +252,33 @@ function get_card_count(suit, value)
     if count == nil then
         count = 0
     end
+    
     return count
+end
+
+function format_count(count, width)
+    cstring = tostring(count)
+    string_length = string.len(cstring)
+    pad_length = math.floor((width - string_length) / 2)
+    
+    l_pad = build_pad(pad_length)
+    r_pad = build_pad(width - ( pad_length + string_length ))
+    
+    return l_pad .. cstring .. r_pad    
+end
+
+
+function build_pad(width)
+    string = ""
+    if width < 0 then
+        return string
+    end
+    
+    while string.len(string) < width do
+        string = string .. " "
+    end
+    
+    return string
 end
 
 
