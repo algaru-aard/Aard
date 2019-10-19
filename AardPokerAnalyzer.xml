@@ -18,13 +18,37 @@
    >
 <description trim="y">
 <![CDATA[
-Use this plugin to help build a library of your poker cards and decide what hands to turn in.
+Use this plugin to help build a library of your poker cards and identify hands.
 
 Commands:
 * card bag <bag name/id> - Set the id of the bag that contains your cards
 * card inventory - Generate a report of the cards that you currently have
 * card report - Generate a report that shows which hands you currently have 
-* card turnin <optional bag id> - Generates a card report, removes all the relevant cards from the bag they are currently in, and optionally puts them in a new bag for easy turnin. 
+* card report <optional bag id> - Generates a card report, removes all 
+  the relevant cards from the bag they are currently in, and optionally puts
+  them in a new bag for easy turnin. (Not yet available)
+  
+Notes:
+* This plugin assumes you have your cards in a single bag
+* This plugin only looks at 3 hand types - royal flush, four of a 
+  kind, and straight-flush (in that order). This is because these are
+  the 3 most qp-efficient hands - four of a kind is more efficient than
+  straight flush because it gives 8.75 qp/card instead of 8. 
+* This plugin does NOT guarantee the optimal turnin hand - there's a 
+  possibility of some loss.
+  
+  Example: You have:
+  * Two: 1 Air, 3 Fire, 3 Water (7 cards)
+  * Three: 1 Air
+  * Four: 1 Air
+  * Five: 1 Air
+  * Six: 1 Air
+  The script will check for royal flush first (none)
+  It will then check for four-of-a-kind. There are 7 Two cards so a 
+  four-of-a-kind will be constructed using 1 Air and 3 Fire cards. 
+  However, a better solution would be to use the Fire and Water cards,
+  so that the Air cards can make a straight flush. I am too lazy to 
+  write that algorithm :) 
 ]]>
 </description>
 
@@ -51,7 +75,7 @@ Commands:
   
   <trigger
    enabled="n"
-   match="^(\(\s?\d+\)\s)?\s*(\(K\)\s?)?(\(M\)|\(Magic\)\s?)?(\(G\)|\(Glow\)\s?)?(\(H\)|\(Hum\)\s?)?\s?\|[\w\d]{1}\[([\w]+) of ([\w]+)\][\w\d]{1}\| \(1\)$"
+   match="^(\(\s?\d+\)\s)?\s*(\(K\)\s?)?(\(M\)|\(Magic\)\s?)?(\(G\)|\(Glow\)\s?)?(\(H\)|\(Hum\)\s?)?\s?\|[\w\d]{1,2}\[([\w]+) of ([\w]+)\][\w\d]{1,2}\| \(1\)$"
    omit_from_output="n"
    regexp="y"
    name="found_card"
@@ -220,9 +244,7 @@ function print_inventory()
         f_fcount = format_count(fcount, 9)
         f_wcount = format_count(wcount, 9)
         f_total  = format_count( total, 9)
-
-        four_of_a_kind_count = four_of_a_kind_count + math.floor(f_total / 4) 
-        
+       
         value = string.format(" %-10s", value)
    
         ColourNote(
@@ -243,8 +265,16 @@ function print_inventory()
     
     ColourNote("magenta", "", "+-----------------------------------------------------------+\n")
     
-    ColourNote("magenta", "", "Four of a kind hands: ", "white", "", four_of_a_kind_count)   
-    ColourNote("magenta", "", "Quest Points: ", "white", "", four_of_a_kind_count * 35)   
+    r_flush_count = find_royal_flush()
+    four_of_a_kind_count = find_four_of_a_kind()
+    s_flush_count = find_straight_flush()
+    total_qp = (50 * r_flush_count) + (35 * four_of_a_kind_count) + (40 * s_flush_count)
+    
+    
+    ColourNote("magenta", "", "Royal Flush hands: ", "white", "", r_flush_count)   
+    ColourNote("magenta", "", "Four of a Kind hands: ", "white", "", four_of_a_kind_count) 
+    ColourNote("magenta", "", "Straight Flush hands: ", "white", "", s_flush_count)     
+    ColourNote("magenta", "", "Quest Points: ", "white", "", total_qp)   
 end
 
 function get_card_count(suit, value)
@@ -253,7 +283,7 @@ function get_card_count(suit, value)
         count = 0
     end
     
-    return count
+    return tonumber(count)
 end
 
 function format_count(count, width)
@@ -279,6 +309,79 @@ function build_pad(width)
     end
     
     return string
+end
+
+
+function find_royal_flush()
+    royal_flush_count = 0
+    
+    for _, suit in ipairs(suits) do
+        tcount = get_card_count(suit, "Ten")
+        mcount = get_card_count(suit, "Mephit")
+        dcount = get_card_count(suit, "Demon")
+        ecount = get_card_count(suit, "Elemental")
+        acount = get_card_count(suit, "Ace")
+        
+        royal_flush_suit_count = math.min(tcount, mcount, dcount, ecount, acount)
+        if (royal_flush_suit_count > 0) then
+            royal_flush_count = royal_flush_count + royal_flush_suit_count
+            collection[suit]["Ten"] = tcount - royal_flush_suit_count
+            collection[suit]["Mephit"] = mcount - royal_flush_suit_count
+            collection[suit]["Demon"] = dcount - royal_flush_suit_count
+            collection[suit]["Elemental"] = ecount - royal_flush_suit_count
+            collection[suit]["Ace"] = acount - royal_flush_suit_count
+        end
+    end
+    
+    return royal_flush_count
+end
+
+
+function find_four_of_a_kind()
+    four_of_a_kind_count = 0
+    total_four_of_a_kind_count = 0
+    for _, value in ipairs(card_order) do
+        cards_to_remove = 0
+        four_of_a_kind_count = 0
+        acount = get_card_count("Air", value)
+        ecount = get_card_count("Earth", value)
+        fcount = get_card_count("Fire", value)
+        wcount = get_card_count("Water", value)
+        total = acount + ecount + fcount + wcount
+
+        four_of_a_kind_count = four_of_a_kind_count + math.floor(total / 4) 
+        total_four_of_a_kind_count = total_four_of_a_kind_count + four_of_a_kind_count
+        
+        -- we need to remove cards from our set now.
+        -- simplest way - we know how many cards to remove, just go through 
+        -- suits in alphabetical order and remove cards until there we have enough
+        
+        cards_to_remove = four_of_a_kind_count * 4
+        
+        for _, suit in ipairs(suits) do
+            if cards_to_remove > 0 then
+                suit_count = get_card_count(suit, value)
+                cards_removed_from_suit = 0
+                
+                if (suit_count > cards_to_remove) then
+                     cards_removed_from_suit = cards_to_remove
+                else
+                     cards_removed_from_suit = suit_count
+                end
+                
+                cards_to_remove = cards_to_remove - cards_removed_from_suit
+                collection[suit][value] = suit_count - cards_removed_from_suit
+                -- print(value .. "/" .. suit .. " changed from " .. suit_count .. " to " .. get_card_count(suit, value))
+            end
+        end
+    end
+    
+    return total_four_of_a_kind_count
+end
+
+
+function find_straight_flush()
+    return 0
 end
 
 
