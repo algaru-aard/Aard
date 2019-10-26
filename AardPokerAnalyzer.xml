@@ -22,8 +22,7 @@ Use this plugin to help build a library of your poker cards and identify hands.
 
 Commands:
 * card bag <bag name/id> - Set the id of the bag that contains your cards
-* card inventory - Generate a report of the cards that you currently have
-* card report - Generate a report that shows which hands you currently have 
+* card report - Generate a report of the cards that you currently have
 * card report <optional bag id> - Generates a card report, removes all 
   the relevant cards from the bag they are currently in, and optionally puts
   them in a new bag for easy turnin. (Not yet available)
@@ -126,12 +125,31 @@ Notes:
     script="card_inventory"
     >
   </alias>
+  
+  <alias
+    match="^card[s]?[ ]+repo?r?t?[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="card_inventory"
+    >
+  </alias>
+
+  <alias
+    match="^card[s]?[ ]+repo?r?t?[ ]*(.*)$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="card_inventory"
+    >
+  </alias>
 </aliases>
 
 <script>
 <![CDATA[
 
 bag = GetVariable("bag") or ""
+turnin_bag = ""
 
 card_values = 
     {   ["Two"] = 2, ["Three"] = 3, ["Four"] = 4, ["Five"] = 5,
@@ -181,6 +199,10 @@ function card_inventory(name, line, args)
     EnableTrigger("done_searching", true)
     Send("invsort level " .. bag)
     
+    if (args[1] ~= nil) then
+        turnin_bag = args[1]
+    end
+    
     SendNoEcho("echo @YDone building card report.")
 end
 
@@ -189,7 +211,9 @@ function done_searching()
     EnableTrigger("found_card", false)
     EnableTrigger("done_searching", false)  
     
-    print_inventory()
+    run_report()
+    
+    turnin_bag = ""
 end
 
 
@@ -212,8 +236,11 @@ function found_card(name, line, args)
 end
 
 
-function print_inventory()
+function run_report()
     four_of_a_kind_count = 0;
+    r_flush_count = 0;
+    s_flush_count = 0;
+    total_qp = 0;
     
     ColourNote("magenta", "", "+-----------------------------------------------------------+")
     ColourNote(
@@ -330,6 +357,20 @@ function find_royal_flush()
             collection[suit]["Demon"] = dcount - royal_flush_suit_count
             collection[suit]["Elemental"] = ecount - royal_flush_suit_count
             collection[suit]["Ace"] = acount - royal_flush_suit_count
+            
+            while (royal_flush_suit_count > 0 and turnin_bag ~= "" ) do
+                -- elemental shows up in a bunch of different cards
+                -- use "king" instead
+                Send("get 'playingcard " .. suit .. " Ace' ".. "'" .. bag .. "'" )
+                Send("get 'playingcard " .. suit .. " king' ".. "'" .. bag .. "'" )
+                Send("get 'playingcard " .. suit .. " Demon' ".. "'" .. bag .. "'" )
+                Send("get 'playingcard " .. suit .. " Mephit' ".. "'" .. bag .. "'" )
+                Send("get 'playingcard " .. suit .. " Ten' ".. "'" .. bag .. "'" )
+                
+                Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'" )
+                
+                royal_flush_suit_count = royal_flush_suit_count - 1
+            end
         end
     end
     
@@ -341,6 +382,13 @@ function find_four_of_a_kind()
     four_of_a_kind_count = 0
     total_four_of_a_kind_count = 0
     for _, value in ipairs(card_order) do
+    
+        -- only check 4 of a kind if it's not 10 or a face card
+        -- lua doesn't have continue?! use this ugliness..
+        if card_values[value] >= 10 then
+            goto endloop
+        end
+        
         cards_to_remove = 0
         four_of_a_kind_count = 0
         acount = get_card_count("Air", value)
@@ -353,8 +401,8 @@ function find_four_of_a_kind()
         total_four_of_a_kind_count = total_four_of_a_kind_count + four_of_a_kind_count
         
         -- we need to remove cards from our set now.
-        -- simplest way - we know how many cards to remove, just go through 
-        -- suits in alphabetical order and remove cards until there we have enough
+        -- simplest way - we know how many cards to remove, just go through suits
+        -- in alphabetical order and remove cards until there we have enough
         
         cards_to_remove = four_of_a_kind_count * 4
         
@@ -372,8 +420,20 @@ function find_four_of_a_kind()
                 cards_to_remove = cards_to_remove - cards_removed_from_suit
                 collection[suit][value] = suit_count - cards_removed_from_suit
                 -- print(value .. "/" .. suit .. " changed from " .. suit_count .. " to " .. get_card_count(suit, value))
+                
+                if (turnin_bag ~= "" and cards_removed_from_suit > 0) then
+                    cards_to_put_back = get_card_count(suit, value)
+                    Send("get all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'")
+                    while (cards_to_put_back > 0) do
+                        Send("put 'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'" )
+                        cards_to_put_back = cards_to_put_back - 1
+                    end
+                    
+                    Send("put all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. turnin_bag .. "'")                    
+                end
             end
         end
+        ::endloop::
     end
     
     return total_four_of_a_kind_count
