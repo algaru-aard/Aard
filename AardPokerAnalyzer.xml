@@ -20,13 +20,6 @@
 <![CDATA[
 Use this plugin to help build a library of your poker cards and identify hands.
 
-Commands:
-* card search - search the market for cards (also shows trivia tokens)
-* card bag <bag name/id> - Set the id of the bag that contains your cards
-* card report <optional bag id> - Generates a report of the hands you have.
-  If a bag ID is provided, remove all elevant cards from the bag they are 
-  currently in, and  puts them in the new bag for easy turnin. 
-  
 Notes:
 * This plugin assumes you have your cards in a single bag
 * This plugin only looks at 3 hand types - royal flush, four of a 
@@ -34,21 +27,16 @@ Notes:
   the 3 most qp-efficient hands - four of a kind is more efficient than
   straight flush because it gives 8.75 qp/card instead of 8. 
 * This plugin does NOT guarantee the optimal turnin hand - there's a 
-  possibility of some loss.
+  possibility of some loss. Read "cards disclaimer" for details. 
   
-  Example: You have:
-  * Two: 1 Air, 3 Fire, 3 Water (7 cards)
-  * Three: 1 Air
-  * Four: 1 Air
-  * Five: 1 Air
-  * Six: 1 Air
-  The script will check for royal flush first (none)
-  It will then check for four-of-a-kind. There are 7 Two cards so a 
-  four-of-a-kind will be constructed using 1 Air and 3 Fire cards. 
-  However, a better solution would be to use the Fire and Water cards,
-  so that the Air cards can make a straight flush. I am too lazy to 
-  write that algorithm :) 
-]]>
+Commands:
+* card search - search the market for cards (also shows trivia tokens)
+* card bag <bag name/id> - Set the id of the bag that contains your cards
+* card report <optional bag id> - Generates a report of the hands you have.
+  If a bag ID is provided, remove all elevant cards from the bag they are 
+  currently in, and  puts them in the new bag for easy turnin. 
+  
+]]> 
 </description>
 
 </plugin>
@@ -144,6 +132,14 @@ Notes:
     >
   </alias>
   <alias
+    match="^card[s]?[ ]+disc?l?a?i?m?e?r?[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="card_disclaimer"
+    >
+  </alias>
+  <alias
     match="^card[s]?[ ]+search[ ]*$"
     regexp="y"
     enabled="y"
@@ -184,6 +180,21 @@ function OnHelp ()
   world.Note (world.GetPluginInfo (world.GetPluginID (), 3))
 end
 
+function card_disclaimer ()
+    print("This plugin does NOT guarantee the optimal turnin hand - there's a ")
+    print("possibility of some loss.")
+    print("Example: You have:")
+    print("  * Two: 1 Air, 3 Fire, 3 Water (7 cards)")
+    print("  * Three: 1 Air")
+    print("  * Four: 1 Air")
+    print("  * Five: 1 Air")
+    print("  * Six: 1 Air")
+    print("  The script will check for royal flush first (none)")
+    print("  It will then check for four-of-a-kind. There are 7 Two cards so a ")
+    print("  four-of-a-kind will be constructed using 1 Air and 3 Fire cards. ")
+    print("  However, a better solution would be to use the Fire and Water cards,")
+    print("  so that the Air cards can make a straight flush.")
+end
 
 function card_bag(name, line, args)
     if args[1] then
