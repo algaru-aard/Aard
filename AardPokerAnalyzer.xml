@@ -35,6 +35,8 @@ Commands:
 * card report <optional bag id> - Generates a report of the hands you have.
   If a bag ID is provided, remove all elevant cards from the bag they are 
   currently in, and  puts them in the new bag for easy turnin. 
+* card vaultsearch <optional bag id> - Same as card report, but searches
+  in a vault instead. 
   
 ]]> 
 </description>
@@ -132,6 +134,23 @@ Commands:
     >
   </alias>
   <alias
+    match="^card[s]?[ ]+vaults?e?a?r?c?h?[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="card_vaultsearch"
+    >
+  </alias>
+
+  <alias
+    match="^card[s]?[ ]+vaults?e?a?r?c?h?[ ]+(.*)$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="card_vaultsearch"
+    >
+  </alias>
+  <alias
     match="^card[s]?[ ]+disc?l?a?i?m?e?r?[ ]*$"
     regexp="y"
     enabled="y"
@@ -155,6 +174,7 @@ Commands:
 
 bag = GetVariable("bag") or ""
 turnin_bag = ""
+getcmd = "get"
 
 card_values = 
     {   ["Two"] = 2, ["Three"] = 3, ["Four"] = 4, ["Five"] = 5,
@@ -215,6 +235,9 @@ end
 
 function card_inventory(name, line, args)
     collection = { ["Air"] = {}, ["Earth"] = {}, ["Fire"] = {}, ["Water"] = {} }
+    getcmd = "get"
+    bag = GetVariable("bag") or ""
+
     EnableTrigger("found_card", true)
     EnableTrigger("done_searching", true)
     Send("invsort level " .. bag)
@@ -226,18 +249,21 @@ function card_inventory(name, line, args)
     SendNoEcho("echo @YDone building card report.")
 end
 
--- function card_vaultsearch(name, line, args)
---     collection = { ["Air"] = {}, ["Earth"] = {}, ["Fire"] = {}, ["Water"] = {} }
---     EnableTrigger("found_card", true)
---     EnableTrigger("done_searching", true)
---     Send("vault filter 1 1 trash")
---     
---     if (args[1] ~= nil) then
---         turnin_bag = args[1]
---     end
---     
---     SendNoEcho("echo @YDone building card report.")
--- end
+function card_vaultsearch(name, line, args)
+    collection = { ["Air"] = {}, ["Earth"] = {}, ["Fire"] = {}, ["Water"] = {} }
+    getcmd = "vault get"
+    bag = ""
+    EnableTrigger("found_card", true)
+    EnableTrigger("done_searching", true)
+    Send("vault filter 1 1 trash")
+    
+    if (args[1] ~= nil) then
+        turnin_bag = args[1]
+    end
+    
+    SendNoEcho("echo @YDone building card report.")
+    bag = GetVariable("bag") or ""
+end
 
 
 function done_searching()
@@ -393,11 +419,11 @@ function find_royal_flush()
             while (royal_flush_suit_count > 0 and turnin_bag ~= "" ) do
                 -- elemental shows up in a bunch of different cards
                 -- use "King" instead
-                Send("get 'playingcard " .. suit .. " Ace' ".. "'" .. bag .. "'" )
-                Send("get 'playingcard " .. suit .. " King' ".. "'" .. bag .. "'" )
-                Send("get 'playingcard " .. suit .. " Demon' ".. "'" .. bag .. "'" )
-                Send("get 'playingcard " .. suit .. " Mephit' ".. "'" .. bag .. "'" )
-                Send("get 'playingcard " .. suit .. " Ten' ".. "'" .. bag .. "'" )
+                Send(getcmd .. " 'playingcard " .. suit .. " Ace' ".. "'" .. bag .. "'" )
+                Send(getcmd .. " 'playingcard " .. suit .. " King' ".. "'" .. bag .. "'" )
+                Send(getcmd .. " 'playingcard " .. suit .. " Demon' ".. "'" .. bag .. "'" )
+                Send(getcmd .. " 'playingcard " .. suit .. " Mephit' ".. "'" .. bag .. "'" )
+                Send(getcmd .. " 'playingcard " .. suit .. " Ten' ".. "'" .. bag .. "'" )
                 
                 Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'" )
                 
@@ -451,11 +477,10 @@ function find_four_of_a_kind()
                 
                 cards_to_remove = cards_to_remove - cards_removed_from_suit
                 collection[suit][value] = suit_count - cards_removed_from_suit
-                -- print(value .. "/" .. suit .. " changed from " .. suit_count .. " to " .. get_card_count(suit, value))
                 
                 if (turnin_bag ~= "" and cards_removed_from_suit > 0) then
                     cards_to_put_back = get_card_count(suit, value)
-                    Send("get all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'")
+                    Send(getcmd .. " all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'")
                     while (cards_to_put_back > 0) do
                         Send("put 'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'" )
                         cards_to_put_back = cards_to_put_back - 1
@@ -511,11 +536,11 @@ function find_straight_flush()
                 straight_flush_count = straight_flush_count + 1
 
                 if (turnin_bag ~= "") then 
-                    Send("get 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
-                    Send("get 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
-                    Send("get 'playingcard " .. suit .. " " .. value3 .. "' ".. "'" .. bag .. "'")
-                    Send("get 'playingcard " .. suit .. " " .. value4 .. "' ".. "'" .. bag .. "'")
-                    Send("get 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
+                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
+                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
+                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value3 .. "' ".. "'" .. bag .. "'")
+                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value4 .. "' ".. "'" .. bag .. "'")
+                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
 
                     Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'")                    
                 end
