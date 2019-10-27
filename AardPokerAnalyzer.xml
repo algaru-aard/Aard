@@ -21,11 +21,11 @@
 Use this plugin to help build a library of your poker cards and identify hands.
 
 Commands:
+* card search - search the market for cards (also shows trivia tokens)
 * card bag <bag name/id> - Set the id of the bag that contains your cards
-* card report - Generate a report of the cards that you currently have
-* card report <optional bag id> - Generates a card report, removes all 
-  the relevant cards from the bag they are currently in, and optionally puts
-  them in a new bag for easy turnin. (Not yet available)
+* card report <optional bag id> - Generates a report of the hands you have.
+  If a bag ID is provided, remove all elevant cards from the bag they are 
+  currently in, and  puts them in the new bag for easy turnin. 
   
 Notes:
 * This plugin assumes you have your cards in a single bag
@@ -136,12 +136,21 @@ Notes:
   </alias>
 
   <alias
-    match="^card[s]?[ ]+repo?r?t?[ ]*(.*)$"
+    match="^card[s]?[ ]+repo?r?t?[ ]+(.*)$"
     regexp="y"
     enabled="y"
     sequence="101"
     script="card_inventory"
     >
+  </alias>
+  <alias
+    match="^card[s]?[ ]+search[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    send_to='10'
+    >
+    <send>market search trash 1 1</send>
   </alias>
 </aliases>
 
@@ -206,6 +215,19 @@ function card_inventory(name, line, args)
     SendNoEcho("echo @YDone building card report.")
 end
 
+-- function card_vaultsearch(name, line, args)
+--     collection = { ["Air"] = {}, ["Earth"] = {}, ["Fire"] = {}, ["Water"] = {} }
+--     EnableTrigger("found_card", true)
+--     EnableTrigger("done_searching", true)
+--     Send("vault filter 1 1 trash")
+--     
+--     if (args[1] ~= nil) then
+--         turnin_bag = args[1]
+--     end
+--     
+--     SendNoEcho("echo @YDone building card report.")
+-- end
+
 
 function done_searching()
     EnableTrigger("found_card", false)
@@ -237,11 +259,6 @@ end
 
 
 function run_report()
-    four_of_a_kind_count = 0;
-    r_flush_count = 0;
-    s_flush_count = 0;
-    total_qp = 0;
-    
     ColourNote("magenta", "", "+-----------------------------------------------------------+")
     ColourNote(
       "magenta",    "", "| Card      |  ",
@@ -290,13 +307,17 @@ function run_report()
             "magenta",  "", "|")
     end
     
-    ColourNote("magenta", "", "+-----------------------------------------------------------+\n")
+    ColourNote("magenta", "", "+-----------------------------------------------------------+\n")   
+    
+    four_of_a_kind_count = 0;
+    r_flush_count = 0;
+    s_flush_count = 0;
+    total_qp = 0;
     
     r_flush_count = find_royal_flush()
     four_of_a_kind_count = find_four_of_a_kind()
     s_flush_count = find_straight_flush()
     total_qp = (50 * r_flush_count) + (35 * four_of_a_kind_count) + (40 * s_flush_count)
-    
     
     ColourNote("magenta", "", "Royal Flush hands: ", "white", "", r_flush_count)   
     ColourNote("magenta", "", "Four of a Kind hands: ", "white", "", four_of_a_kind_count) 
@@ -360,9 +381,9 @@ function find_royal_flush()
             
             while (royal_flush_suit_count > 0 and turnin_bag ~= "" ) do
                 -- elemental shows up in a bunch of different cards
-                -- use "king" instead
+                -- use "King" instead
                 Send("get 'playingcard " .. suit .. " Ace' ".. "'" .. bag .. "'" )
-                Send("get 'playingcard " .. suit .. " king' ".. "'" .. bag .. "'" )
+                Send("get 'playingcard " .. suit .. " King' ".. "'" .. bag .. "'" )
                 Send("get 'playingcard " .. suit .. " Demon' ".. "'" .. bag .. "'" )
                 Send("get 'playingcard " .. suit .. " Mephit' ".. "'" .. bag .. "'" )
                 Send("get 'playingcard " .. suit .. " Ten' ".. "'" .. bag .. "'" )
@@ -441,7 +462,60 @@ end
 
 
 function find_straight_flush()
-    return 0
+    -- Straight flush - look within a suit, find any sequences of five cards
+    -- This only checks for straights starting with 2-5. We don't want to user
+    -- cards with values >= 10 because those should be saved to build royal flushes
+    
+    straight_flush_count = 0
+    
+    for _, suit in ipairs(suits) do
+        for index = 1, 4 do
+            value1 = card_order[index+0]
+            value2 = card_order[index+1]
+            value3 = card_order[index+2]
+            value4 = card_order[index+3]
+            value5 = card_order[index+4]
+ 
+            count1 = get_card_count(suit, value1)
+            count2 = get_card_count(suit, value2)
+            count3 = get_card_count(suit, value3)
+            count4 = get_card_count(suit, value4)
+            count5 = get_card_count(suit, value5)
+            
+            while (count1 > 0 and count2 > 0 and count3 > 0 
+                and count4 > 0 and count5 > 0) do
+                
+                collection[suit][value1] = get_card_count(suit, value1) - 1
+                collection[suit][value2] = get_card_count(suit, value2) - 1
+                collection[suit][value3] = get_card_count(suit, value3) - 1
+                collection[suit][value4] = get_card_count(suit, value4) - 1
+                collection[suit][value5] = get_card_count(suit, value5) - 1
+                
+                count1 = get_card_count(suit, value1)
+                count2 = get_card_count(suit, value2)
+                count3 = get_card_count(suit, value3)
+                count4 = get_card_count(suit, value4)
+                count5 = get_card_count(suit, value5)
+                
+                straight_flush_count = straight_flush_count + 1
+
+                if (turnin_bag ~= "") then 
+                    Send("get 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
+                    Send("get 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
+                    Send("get 'playingcard " .. suit .. " " .. value3 .. "' ".. "'" .. bag .. "'")
+                    Send("get 'playingcard " .. suit .. " " .. value4 .. "' ".. "'" .. bag .. "'")
+                    Send("get 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
+
+                    Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'")                    
+                end
+                
+            end
+        
+        end
+        
+    end
+    
+    return straight_flush_count
 end
 
 
