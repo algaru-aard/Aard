@@ -24,8 +24,14 @@ Notes:
 * This plugin assumes you have your cards in a single bag
 * This plugin only looks at 3 hand types - royal flush, four of a 
   kind, and straight-flush (in that order). This is because these are
-  the 3 most qp-efficient hands - four of a kind is more efficient than
-  straight flush because it gives 8.75 qp/card instead of 8. 
+  the 3 most qp-efficient hands. 
+  * Royal flush:    10.0 qp/card (50 qp total, 5 cards)
+  * Four-of-a-kind: 8.75 qp/card (35 qp total, 4 cards) 
+  * Straight flush: 8.00 qp/card (40 qp total, 5 cards)
+* Because of the relative turn-in values of these hands, this script ignores
+  tens and face cards when looking at four of a kind and straight flush hands.
+  These are intentionally saved to build royal flushes instead. 
+  *** Coming soon! A toggle for this feature ***
 * This plugin does NOT guarantee the optimal turnin hand - there's a 
   possibility of some loss. Read "cards disclaimer" for details. 
   
