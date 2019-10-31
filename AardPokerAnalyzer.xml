@@ -13,7 +13,6 @@
    language="Lua"
    purpose="Analyze the cards you have and help figure out what to turn in!"
    date_written="2019-10-13 07:45:18"
-   requires="5.06"
    version="1.0"
    >
 <description trim="y">
