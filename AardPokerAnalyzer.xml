@@ -29,8 +29,8 @@ Notes:
   * Straight flush: 8.00 qp/card (40 qp total, 5 cards)
 * Because of the relative turn-in values of these hands, this script ignores
   tens and face cards when looking at four of a kind and straight flush hands.
-  These are intentionally saved to build royal flushes instead. 
-  *** Coming soon! A toggle for this feature ***
+  These are intentionally saved to build royal flushes instead. This behavior
+  can be toggled if you choose. 
 * This plugin does NOT guarantee the optimal turnin hand - there's a 
   possibility of some loss. Read "cards disclaimer" for details. 
   
@@ -38,10 +38,15 @@ Commands:
 * card search - search the market for cards (also shows trivia tokens)
 * card bag <bag name/id> - Set the id of the bag that contains your cards
 * card report <optional bag id> - Generates a report of the hands you have.
-  If a bag ID is provided, remove all elevant cards from the bag they are 
-  currently in, and  puts them in the new bag for easy turnin. 
+    If a bag ID is provided, remove all elevant cards from the bag they are 
+    currently in, and  puts them in the new bag for easy turnin. 
 * card vaultsearch <optional bag id> - Same as card report, but searches
-  in a vault instead. 
+    in a vault instead. 
+* card checkface <on/off> - Toggle the behavior for checking face cards for
+    four of a kind and straight flush. If no parameter is passed, it displays
+    the current setting. 
+* card reset - reset plugin variables to default (no bag, checkface off)
+* card vars - dump the current variable values. 
   
 ]]> 
 </description>
@@ -113,6 +118,41 @@ Commands:
   </alias>
 
   <alias
+    match="^card[s]?[ ]+checkface[ ]+(on|off)?$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="card_checkface"
+    >
+  </alias>
+  
+  <alias
+    match="^card[s]?[ ]+checkface[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="card_checkface"
+    >
+  </alias>  
+  
+  <alias
+    match="^card[s]?[ ]+reset[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="card_reset"
+    >
+  </alias>  
+
+  <alias
+    match="^card[s]?[ ]+vars[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="card_vars"
+    >
+  </alias>  
+  <alias
     match="^card[s]?[ ]+inve?n?t?o?r?y?[ ]*$"
     regexp="y"
     enabled="y"
@@ -178,6 +218,8 @@ Commands:
 <![CDATA[
 
 bag = GetVariable("bag") or ""
+checkface = GetVariable("checkface") or "off"
+
 turnin_bag = ""
 getcmd = "get"
 
@@ -221,18 +263,52 @@ function card_disclaimer ()
     print("  so that the Air cards can make a straight flush.")
 end
 
+
+
+function card_vars()
+    Note("Dumping card plugin variables.")
+    Note("Card bag: " .. GetVariable("bag"))
+    Note("Check face: " .. GetVariable("checkface"))
+end
+
+function card_reset()
+    Note("Resetting card bag and check facecard option to defaults.")
+    SetVariable("bag", "")
+    SetVariable("checkface", "off")
+    SaveState()
+    card_vars()
+end
+
 function card_bag(name, line, args)
     if args[1] then
-        bag = args[1]
-        SetVariable("bag", bag)
+        _bag = args[1]
+        SetVariable("bag", _bag)
         SaveState()
-        Note("Set card bag to " .. bag)
+        Note("Set card bag to " .. GetVariable("bag"))
     else
-        if (bag == nil)
+        _bag = GetVariable("bag") 
+        if (_bag == nil or bag == "")
         then
             Note("Card bag is unset!")
         else
-            Note("Current card bag is " .. bag)
+            Note("Current card bag is " .. _bag)
+        end
+    end
+end
+
+function card_checkface(name, line, args)
+    if args[1] then
+        _checkface = args[1]
+        SetVariable("checkface", _checkface)
+        SaveState()
+        Note("Set card checkface to " .. GetVariable("checkface"))
+    else
+        _checkface = GetVariable("checkface") 
+        if (_checkface == nil or checkface == "")
+        then
+            Note("Card checkface is unset! Default behavior is off.")
+        else
+            Note("Current card checkface is " .. _checkface)
         end
     end
 end
@@ -242,6 +318,7 @@ function card_inventory(name, line, args)
     collection = { ["Air"] = {}, ["Earth"] = {}, ["Fire"] = {}, ["Water"] = {} }
     getcmd = "get"
     bag = GetVariable("bag") or ""
+    checkface = GetVariable("checkface") or ""
 
     EnableTrigger("found_card", true)
     EnableTrigger("done_searching", true)
@@ -268,6 +345,7 @@ function card_vaultsearch(name, line, args)
     
     SendNoEcho("echo @YDone building card report.")
     bag = GetVariable("bag") or ""
+    checkface = GetVariable("checkface") or ""
 end
 
 
@@ -325,11 +403,11 @@ function run_report()
         wcount = get_card_count("Water", value)
         total = acount + ecount + fcount + wcount
         
-        f_acount = format_count(acount, 7)
-        f_ecount = format_count(ecount, 9)
-        f_fcount = format_count(fcount, 9)
-        f_wcount = format_count(wcount, 9)
-        f_total  = format_count( total, 9)
+        f_acount = center_string(acount, 7)
+        f_ecount = center_string(ecount, 9)
+        f_fcount = center_string(fcount, 9)
+        f_wcount = center_string(wcount, 9)
+        f_total  = center_string( total, 9)
        
         value = string.format(" %-10s", value)
    
@@ -351,6 +429,9 @@ function run_report()
     
     ColourNote("magenta", "", "+-----------------------------------------------------------+\n")   
     
+    checkstring = "*** Check Face Cards option is currently " .. checkface .. ". ***"
+    
+    ColourNote("white", "", center_string(checkstring, 62) .. "\n")
     four_of_a_kind_count = 0;
     r_flush_count = 0;
     s_flush_count = 0;
@@ -376,8 +457,8 @@ function get_card_count(suit, value)
     return tonumber(count)
 end
 
-function format_count(count, width)
-    cstring = tostring(count)
+function center_string(input, width)
+    cstring = tostring(input)
     string_length = string.len(cstring)
     pad_length = math.floor((width - string_length) / 2)
     
@@ -448,7 +529,7 @@ function find_four_of_a_kind()
     
         -- only check 4 of a kind if it's not 10 or a face card
         -- lua doesn't have continue?! use this ugliness..
-        if card_values[value] >= 10 then
+        if card_values[value] >= 10 and checkface ~= "on" then
             goto endloop
         end
         
@@ -504,13 +585,25 @@ end
 
 function find_straight_flush()
     -- Straight flush - look within a suit, find any sequences of five cards
-    -- This only checks for straights starting with 2-5. We don't want to user
-    -- cards with values >= 10 because those should be saved to build royal flushes
     
     straight_flush_count = 0
     
+    -- Starting card for straight flush. 
+    -- If the "check face" option is on, look for straights starting up to 9.
+    -- Can skip 10 because that's a royal flush and already checked. 
+    -- If it's off (default) then only go up to straights starting with 5 so
+    -- we don't pull tens and face cards into the straight flush. 
+    -- Maxindex is off by card value by 1 because first card is two.
+    
+    if (checkface == "on") then
+        maxindex = 8
+    else
+        maxindex = 4
+    end
+    
+    
     for _, suit in ipairs(suits) do
-        for index = 1, 4 do
+        for index = 1, maxindex do
             value1 = card_order[index+0]
             value2 = card_order[index+1]
             value3 = card_order[index+2]
@@ -525,31 +618,27 @@ function find_straight_flush()
             
             while (count1 > 0 and count2 > 0 and count3 > 0 
                 and count4 > 0 and count5 > 0) do
-                
-                collection[suit][value1] = get_card_count(suit, value1) - 1
-                collection[suit][value2] = get_card_count(suit, value2) - 1
-                collection[suit][value3] = get_card_count(suit, value3) - 1
-                collection[suit][value4] = get_card_count(suit, value4) - 1
-                collection[suit][value5] = get_card_count(suit, value5) - 1
-                
-                count1 = get_card_count(suit, value1)
-                count2 = get_card_count(suit, value2)
-                count3 = get_card_count(suit, value3)
-                count4 = get_card_count(suit, value4)
-                count5 = get_card_count(suit, value5)
-                
-                straight_flush_count = straight_flush_count + 1
-
-                if (turnin_bag ~= "") then 
-                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
-                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
-                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value3 .. "' ".. "'" .. bag .. "'")
-                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value4 .. "' ".. "'" .. bag .. "'")
-                    Send(getcmd .. " 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
-
-                    Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'")                    
-                end
-                
+                process_straight_flush(suit, value1, value2, value3, value4, value5)
+            end
+        end
+        
+        -- special handling for straight flush starting with ace
+        if (checkface == "on") then
+            value1 = card_order[13]   -- Ace
+            value2 = card_order[1]  -- Two
+            value3 = card_order[2]  -- Three
+            value4 = card_order[3]  -- Four
+            value5 = card_order[4]  -- Five
+            
+            count1 = get_card_count(suit, value1)
+            count2 = get_card_count(suit, value2)
+            count3 = get_card_count(suit, value3)
+            count4 = get_card_count(suit, value4)
+            count5 = get_card_count(suit, value5)
+            
+            while (count1 > 0 and count2 > 0 and count3 > 0 
+                and count4 > 0 and count5 > 0) do
+                process_straight_flush(suit, value1, value2, value3, value4, value5)
             end
         
         end
@@ -557,6 +646,34 @@ function find_straight_flush()
     end
     
     return straight_flush_count
+end
+
+
+-- helper function to process straight flush
+function process_straight_flush (suit, value1, value2, value3, value4, value5)            
+    collection[suit][value1] = get_card_count(suit, value1) - 1
+    collection[suit][value2] = get_card_count(suit, value2) - 1
+    collection[suit][value3] = get_card_count(suit, value3) - 1
+    collection[suit][value4] = get_card_count(suit, value4) - 1
+    collection[suit][value5] = get_card_count(suit, value5) - 1
+    
+    count1 = get_card_count(suit, value1)
+    count2 = get_card_count(suit, value2)
+    count3 = get_card_count(suit, value3)
+    count4 = get_card_count(suit, value4)
+    count5 = get_card_count(suit, value5)
+    
+    straight_flush_count = straight_flush_count + 1
+
+    if (turnin_bag ~= "") then 
+        Send(getcmd .. " 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
+        Send(getcmd .. " 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
+        Send(getcmd .. " 'playingcard " .. suit .. " " .. value3 .. "' ".. "'" .. bag .. "'")
+        Send(getcmd .. " 'playingcard " .. suit .. " " .. value4 .. "' ".. "'" .. bag .. "'")
+        Send(getcmd .. " 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
+
+        Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'")                    
+    end
 end
 
 
