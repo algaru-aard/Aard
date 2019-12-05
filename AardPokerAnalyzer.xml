@@ -322,7 +322,7 @@ function card_inventory(name, line, args)
 
     EnableTrigger("found_card", true)
     EnableTrigger("done_searching", true)
-    Send("invsort level " .. bag)
+    SendWait("invsort level " .. bag)
     
     if (args[1] ~= nil) then
         turnin_bag = args[1]
@@ -505,14 +505,14 @@ function find_royal_flush()
             while (royal_flush_suit_count > 0 and turnin_bag ~= "" ) do
                 -- elemental shows up in a bunch of different cards
                 -- use "King" instead
-                Send(getcmd .. " 'playingcard " .. suit .. " Ace' ".. "'" .. bag .. "'" )
-                Send(getcmd .. " 'playingcard " .. suit .. " King' ".. "'" .. bag .. "'" )
-                Send(getcmd .. " 'playingcard " .. suit .. " Demon' ".. "'" .. bag .. "'" )
-                Send(getcmd .. " 'playingcard " .. suit .. " Mephit' ".. "'" .. bag .. "'" )
-                Send(getcmd .. " 'playingcard " .. suit .. " Ten' ".. "'" .. bag .. "'" )
+                SendWait(getcmd .. " 'playingcard " .. suit .. " Ace' ".. "'" .. bag .. "'" )
+                SendWait(getcmd .. " 'playingcard " .. suit .. " King' ".. "'" .. bag .. "'" )
+                SendWait(getcmd .. " 'playingcard " .. suit .. " Demon' ".. "'" .. bag .. "'" )
+                SendWait(getcmd .. " 'playingcard " .. suit .. " Mephit' ".. "'" .. bag .. "'" )
+                SendWait(getcmd .. " 'playingcard " .. suit .. " Ten' ".. "'" .. bag .. "'" )
                 
-                Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'" )
-                
+                SendWait("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'" )
+
                 royal_flush_suit_count = royal_flush_suit_count - 1
             end
         end
@@ -566,13 +566,13 @@ function find_four_of_a_kind()
                 
                 if (turnin_bag ~= "" and cards_removed_from_suit > 0) then
                     cards_to_put_back = get_card_count(suit, value)
-                    Send(getcmd .. " all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'")
+                    SendWait(getcmd .. " all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'")
                     while (cards_to_put_back > 0) do
-                        Send("put 'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'" )
+                        SendWait("put 'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'" )
                         cards_to_put_back = cards_to_put_back - 1
                     end
                     
-                    Send("put all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. turnin_bag .. "'")                    
+                    SendWait("put all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. turnin_bag .. "'")                    
                 end
             end
         end
@@ -666,16 +666,24 @@ function process_straight_flush (suit, value1, value2, value3, value4, value5)
     straight_flush_count = straight_flush_count + 1
 
     if (turnin_bag ~= "") then 
-        Send(getcmd .. " 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
-        Send(getcmd .. " 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
-        Send(getcmd .. " 'playingcard " .. suit .. " " .. value3 .. "' ".. "'" .. bag .. "'")
-        Send(getcmd .. " 'playingcard " .. suit .. " " .. value4 .. "' ".. "'" .. bag .. "'")
-        Send(getcmd .. " 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
+        SendWait(getcmd .. " 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
+        SendWait(getcmd .. " 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
+        SendWait(getcmd .. " 'playingcard " .. suit .. " " .. value3 .. "' ".. "'" .. bag .. "'")
+        SendWait(getcmd .. " 'playingcard " .. suit .. " " .. value4 .. "' ".. "'" .. bag .. "'")
+        SendWait(getcmd .. " 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
 
-        Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'")                    
+        SendWait("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'")                    
     end
 end
 
+-- helper function. This is a just a wrapper function around Send with a built in wait
+function SendWait (command)
+    require "wait"
+    wait.make (function ()
+        Send(command)
+        wait.time(.200)
+    end) 
+end
 
 ]]>
 
