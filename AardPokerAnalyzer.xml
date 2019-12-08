@@ -508,6 +508,8 @@ function find_royal_flush()
                 -- use "King" instead
                 require "wait"
                 wait.make (function ()
+                    -- local copy because wait.time seems to clear the value of turnin_bag otherwise
+                    local_turnin = turnin_bag
                     Send(getcmd .. " 'playingcard " .. suit .. " Ace' ".. "'" .. bag .. "'" )
                     wait.time(WAIT_TIME)
                     Send(getcmd .. " 'playingcard " .. suit .. " King' ".. "'" .. bag .. "'" )
@@ -519,7 +521,7 @@ function find_royal_flush()
                     Send(getcmd .. " 'playingcard " .. suit .. " Ten' ".. "'" .. bag .. "'" )
                     wait.time(WAIT_TIME)
                     
-                    Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'" )
+                    Send("put all.'playingcard " .. suit .. "' ".. "'" .. local_turnin .. "'" )
                     wait.time(WAIT_TIME)
                 end)
 
@@ -578,6 +580,8 @@ function find_four_of_a_kind()
                     cards_to_put_back = get_card_count(suit, value)
                     require "wait"
                     wait.make (function ()
+                        -- the turnin_bag variable seems to become unavailable after the first wait. Don't know why!
+                        local_turnin = turnin_bag
                         Send(getcmd .. " all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'")
                         wait.time(WAIT_TIME)
                         while (cards_to_put_back > 0) do
@@ -585,8 +589,8 @@ function find_four_of_a_kind()
                             wait.time(WAIT_TIME)
                             cards_to_put_back = cards_to_put_back - 1
                         end
-                        
-                        Send("put all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. turnin_bag .. "'")    
+
+                        Send("put all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. local_turnin .. "'")    
                         wait.time(WAIT_TIME)
                     end)
                 end
@@ -684,6 +688,8 @@ function process_straight_flush (suit, value1, value2, value3, value4, value5)
     if (turnin_bag ~= "") then 
         require "wait"
         wait.make (function ()
+            -- local copy because wait.time seems to clear the value of turnin_bag otherwise
+            local_turnin = turnin_bag
             Send(getcmd .. " 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
             wait.time(WAIT_TIME)
             Send(getcmd .. " 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
@@ -695,7 +701,7 @@ function process_straight_flush (suit, value1, value2, value3, value4, value5)
             Send(getcmd .. " 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
             wait.time(WAIT_TIME)
     
-            Send("put all.'playingcard " .. suit .. "' ".. "'" .. turnin_bag .. "'") 
+            Send("put all.'playingcard " .. suit .. "' ".. "'" .. local_turnin .. "'") 
             wait.time(WAIT_TIME)
        end)
     end
