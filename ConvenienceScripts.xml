@@ -13,7 +13,6 @@
    language="Lua"
    purpose="Collection of useful tools"
    date_written="2019-01-20 09:31:18"
-   requires="5.06"
    version="1.0"
    >
 
@@ -83,23 +82,23 @@
 
 <script>
 <![CDATA[
-	function repeat_command (name, line, wildcards)
-		count = tonumber(wildcards.count)
-		command = wildcards.command
-	
-		if (count < 0 or count > 10)
-		then
-			print("INVALID VALUE")
-			return
-		end
-		
-		local index = 0
-		while (index < count) do
-			Send(command)
-			index = index + 1
-		end
-		
-	end -- repeat_command
+    function repeat_command (name, line, wildcards)
+        count = tonumber(wildcards.count)
+        command = wildcards.command
+    
+        if (count < 0 or count > 10)
+        then
+            print("INVALID VALUE")
+            return
+        end
+        
+        local index = 0
+        while (index < count) do
+            Send(command)
+            index = index + 1
+        end
+        
+    end -- repeat_command
     
     
     --  Earthtouch Helpers -- 
