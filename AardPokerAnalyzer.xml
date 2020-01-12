@@ -219,7 +219,11 @@ Commands:
 
 bag = GetVariable("bag") or ""
 checkface = GetVariable("checkface") or "off"
-WAIT_TIME = .200
+
+-- needed? 
+queue = {}
+
+WAIT_TIME = .250
 
 turnin_bag = ""
 getcmd = "get"
@@ -276,6 +280,7 @@ function card_reset()
     Note("Resetting card bag and check facecard option to defaults.")
     SetVariable("bag", "")
     SetVariable("checkface", "off")
+    queue = {}
     SaveState()
     card_vars()
 end
@@ -317,6 +322,7 @@ end
 
 function card_inventory(name, line, args)
     collection = { ["Air"] = {}, ["Earth"] = {}, ["Fire"] = {}, ["Water"] = {} }
+    queue = {}
     getcmd = "get"
     bag = GetVariable("bag") or ""
     checkface = GetVariable("checkface") or ""
@@ -334,6 +340,7 @@ end
 
 function card_vaultsearch(name, line, args)
     collection = { ["Air"] = {}, ["Earth"] = {}, ["Fire"] = {}, ["Water"] = {} }
+    queue = {}
     getcmd = "vault get"
     bag = ""
     EnableTrigger("found_card", true)
@@ -396,7 +403,6 @@ function run_report()
 
     ColourNote("magenta", "", "+-----------------------------------------------------------+")
 
-
     for _, value in ipairs(card_order) do
         acount = get_card_count("Air", value)
         ecount = get_card_count("Earth", value)
@@ -447,6 +453,8 @@ function run_report()
     ColourNote("magenta", "", "Four of a Kind hands: ", "white", "", four_of_a_kind_count) 
     ColourNote("magenta", "", "Straight Flush hands: ", "white", "", s_flush_count)     
     ColourNote("magenta", "", "Quest Points: ", "white", "", total_qp)   
+    
+    process_queue()
 end
 
 function get_card_count(suit, value)
@@ -486,7 +494,7 @@ end
 
 function find_royal_flush()
     royal_flush_count = 0
-    
+        
     for _, suit in ipairs(suits) do
         tcount = get_card_count(suit, "Ten")
         mcount = get_card_count(suit, "Mephit")
@@ -506,30 +514,21 @@ function find_royal_flush()
             while (royal_flush_suit_count > 0 and turnin_bag ~= "" ) do
                 -- elemental shows up in a bunch of different cards
                 -- use "King" instead
-                require "wait"
-                wait.make (function ()
-                    -- local copy because wait.time seems to clear the value of turnin_bag otherwise
-                    local_turnin = turnin_bag
-                    Send(getcmd .. " 'playingcard " .. suit .. " Ace' ".. "'" .. bag .. "'" )
-                    wait.time(WAIT_TIME)
-                    Send(getcmd .. " 'playingcard " .. suit .. " King' ".. "'" .. bag .. "'" )
-                    wait.time(WAIT_TIME)
-                    Send(getcmd .. " 'playingcard " .. suit .. " Demon' ".. "'" .. bag .. "'" )
-                    wait.time(WAIT_TIME)
-                    Send(getcmd .. " 'playingcard " .. suit .. " Mephit' ".. "'" .. bag .. "'" )
-                    wait.time(WAIT_TIME)
-                    Send(getcmd .. " 'playingcard " .. suit .. " Ten' ".. "'" .. bag .. "'" )
-                    wait.time(WAIT_TIME)
-                    
-                    Send("put all.'playingcard " .. suit .. "' ".. "'" .. local_turnin .. "'" )
-                    wait.time(WAIT_TIME)
-                end)
 
+                -- local copy because wait.time seems to clear the value of turnin_bag otherwise
+                local_turnin = turnin_bag
+                table.insert(queue, getcmd .. " 'playingcard " .. suit .. " Ace' ".. "'" .. bag .. "'" )
+                table.insert(queue, getcmd .. " 'playingcard " .. suit .. " King' ".. "'" .. bag .. "'" )
+                table.insert(queue, getcmd .. " 'playingcard " .. suit .. " Demon' ".. "'" .. bag .. "'" )
+                table.insert(queue, getcmd .. " 'playingcard " .. suit .. " Mephit' ".. "'" .. bag .. "'" )
+                table.insert(queue, getcmd .. " 'playingcard " .. suit .. " Ten' ".. "'" .. bag .. "'" )
+                table.insert(queue, "put all.'playingcard " .. suit .. "' ".. "'" .. local_turnin .. "'" )
+                
                 royal_flush_suit_count = royal_flush_suit_count - 1
             end
         end
     end
-    
+        
     return royal_flush_count
 end
 
@@ -538,7 +537,9 @@ function find_four_of_a_kind()
     four_of_a_kind_count = 0
     total_four_of_a_kind_count = 0
     for _, value in ipairs(card_order) do
-    
+        
+        cards_found = false
+        
         -- only check 4 of a kind if it's not 10 or a face card
         -- lua doesn't have continue?! use this ugliness..
         if card_values[value] >= 10 and checkface ~= "on" then
@@ -561,41 +562,38 @@ function find_four_of_a_kind()
         -- in alphabetical order and remove cards until there we have enough
         
         cards_to_remove = four_of_a_kind_count * 4
-
-
-        require "wait"
-        wait.make (function ()      
-            local_turnin = turnin_bag
-            for _, suit in ipairs(suits) do
-                if cards_to_remove > 0 then
-                    suit_count = get_card_count(suit, value)
-                    cards_removed_from_suit = 0
-                    
-                    if (suit_count > cards_to_remove) then
-                         cards_removed_from_suit = cards_to_remove
-                    else
-                         cards_removed_from_suit = suit_count
-                    end
-                    
-                    cards_to_remove = cards_to_remove - cards_removed_from_suit
-                    collection[suit][value] = suit_count - cards_removed_from_suit
-                    
-                    if (turnin_bag ~= "" and cards_removed_from_suit > 0) then
-                        cards_to_put_back = get_card_count(suit, value)
-                            Send(getcmd .. " all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'")
-                            wait.time(WAIT_TIME)
-                            while (cards_to_put_back > 0) do
-                                Send("put 'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'" )
-                                wait.time(WAIT_TIME)
-                                cards_to_put_back = cards_to_put_back - 1
-                            end
-
-                            Send("put all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. local_turnin .. "'")    
-                            wait.time(WAIT_TIME)
+     
+        local_turnin = turnin_bag
+        for _, suit in ipairs(suits) do
+            if cards_to_remove > 0 then
+                suit_count = get_card_count(suit, value)
+                cards_removed_from_suit = 0
+                
+                if (suit_count > cards_to_remove) then
+                     cards_removed_from_suit = cards_to_remove
+                else
+                     cards_removed_from_suit = suit_count
+                end
+                
+                cards_to_remove = cards_to_remove - cards_removed_from_suit
+                collection[suit][value] = suit_count - cards_removed_from_suit
+                
+                if (turnin_bag ~= "" and cards_removed_from_suit > 0) then
+                    cards_found = true
+                    cards_to_put_back = get_card_count(suit, value)
+                    table.insert(queue, getcmd .. " all.'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'")
+                    while (cards_to_put_back > 0) do
+                        table.insert(queue, "put 'playingcard " .. suit .. " " .. value .. "' ".. "'" .. bag .. "'" )
+                        cards_to_put_back = cards_to_put_back - 1
                     end
                 end
             end
-        end)
+        end
+        
+        if (cards_found) then
+            table.insert(queue, "put all.'playingcard " .. value .. "' ".. "'" .. local_turnin .. "'")    
+        end
+        
         ::endloop::
     end
     
@@ -620,7 +618,6 @@ function find_straight_flush()
     else
         maxindex = 4
     end
-    
     
     for _, suit in ipairs(suits) do
         for index = 1, maxindex do
@@ -686,26 +683,30 @@ function process_straight_flush (suit, value1, value2, value3, value4, value5)
     straight_flush_count = straight_flush_count + 1
 
     if (turnin_bag ~= "") then 
-        require "wait"
-        wait.make (function ()
-            -- local copy because wait.time seems to clear the value of turnin_bag otherwise
-            local_turnin = turnin_bag
-            Send(getcmd .. " 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
-            wait.time(WAIT_TIME)
-            Send(getcmd .. " 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
-            wait.time(WAIT_TIME)
-            Send(getcmd .. " 'playingcard " .. suit .. " " .. value3 .. "' ".. "'" .. bag .. "'")
-            wait.time(WAIT_TIME)
-            Send(getcmd .. " 'playingcard " .. suit .. " " .. value4 .. "' ".. "'" .. bag .. "'")
-            wait.time(WAIT_TIME)
-            Send(getcmd .. " 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
-            wait.time(WAIT_TIME)
-    
-            Send("put all.'playingcard " .. suit .. "' ".. "'" .. local_turnin .. "'") 
-            wait.time(WAIT_TIME)
-       end)
+        -- local copy because wait.time seems to clear the value of turnin_bag otherwise
+        local_turnin = turnin_bag
+        table.insert(queue, getcmd .. " 'playingcard " .. suit .. " " .. value1 .. "' ".. "'" .. bag .. "'")
+        table.insert(queue, getcmd .. " 'playingcard " .. suit .. " " .. value2 .. "' ".. "'" .. bag .. "'")
+        table.insert(queue, getcmd .. " 'playingcard " .. suit .. " " .. value3 .. "' ".. "'" .. bag .. "'")
+        table.insert(queue, getcmd .. " 'playingcard " .. suit .. " " .. value4 .. "' ".. "'" .. bag .. "'")
+        table.insert(queue, getcmd .. " 'playingcard " .. suit .. " " .. value5 .. "' ".. "'" .. bag .. "'")
+        table.insert(queue, "put all.'playingcard " .. suit .. "' ".. "'" .. local_turnin .. "'") 
     end
 end
+
+
+function process_queue () 
+    require "wait"
+    wait.make (function ()
+        for _, command in ipairs(queue) do
+            -- Note(command)
+            Send(command)
+            wait.time(WAIT_TIME)
+        end
+    
+    end)
+end
+
 
 ]]>
 
