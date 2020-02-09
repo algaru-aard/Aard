@@ -581,7 +581,9 @@ function aarch_report(name, line, args)
         if (fnd == false) and (v > 1) then
             dcnt = dcnt + 1
             ColourNote("white", "", " ".. string.format("%-24s", pc), "magenta", "", " - ", "yellow", "", string.format("%-30s", (v - 1).." Extra Piece"..pcsuff.." "), "magenta", "", "[", "cyan", "", string.format("%5s", turnin), "magenta", "", "]")
-        elseif (fnd == false) and (v <= 1) then
+        end
+        
+        if (fnd == false) and (new_turnin[pc] == nil ) then
             newpx = newpx + 1
             new_turnin[pc] = cval
             if cval == "TP" then
