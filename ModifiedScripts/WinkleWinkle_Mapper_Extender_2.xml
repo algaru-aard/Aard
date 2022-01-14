@@ -89,7 +89,7 @@ MAPPER EXTENDER USAGE:
 >   roomnote
         - Lists all mapper notes for the current room (if any).
 		
->   roomnote area
+>   rna
         - Lists all mapper notes for the current area (if any). Useful for mazes
 
 ===== SETTINGS ======================>
@@ -288,15 +288,23 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 	
 	<!-- roomnotes -->
 
-	<alias match="^r(?:oomnote|n)$"
+	<alias match="^r(?:oomnote|n)(?: (?<text>.+))?$"
 		enabled="y"
 		sequence="100"
 		script="room_note"
 		regexp="y"
 	>
 	</alias>
+    
+    <alias match="^anf(?: (?<text>.+))?$"
+		enabled="y"
+		sequence="100"
+		script="room_note_area"
+		regexp="y"
+	>
+	</alias>
 
-	<alias match="^r(?:oomnote|n) a(?:rea)?(?: (?<areaid>.+))?$"
+	<alias match="^rna(?: (?<areaid>.+))?$"
 		enabled="y"
 		sequence="99"
 		script="room_note_area"
@@ -366,6 +374,18 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 		omit_from_output="y"
 		sequence="500">
 	</trigger>
+
+    <!-- Extra trigger to cover (Helper) Fenix, which keeps breaking -->
+<!--
+	<trigger match="^You still have to kill \* (?<mob>\(Helper\) Fenix) \((?<where>.+?)(?<isdead> - Dead)?\)\.?$"
+		name="trg_xcp_line"
+		script="xcp_index_line"
+		enabled="n"
+		regexp="y"
+		omit_from_output="y"
+		sequence="500">
+	</trigger>
+-->
 
 	<trigger match="^(?!You still have to kill \*)"
 		name="trg_xcp_line_end"
@@ -1156,8 +1176,12 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 	---- room notes --------
 
 	function room_note_area(name, line, wildcards)
-		if (wildcards.areaid == "") then
-			get_notes(currentRoom.areaid, nil)
+		if (wildcards.areaid == "" or wildcards.areaid == nil) then
+            if (wildcards.text == "") then
+                get_notes(currentRoom.areaid, nil)
+            else
+                get_notes(currentRoom.areaid, nil, wildcards.text)
+            end
 		else
 			get_notes(wildcards.areaid, nil)
 		end
@@ -1167,19 +1191,26 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 		get_notes(nil, currentRoom.roomid)
 	end
 
-	function get_notes(areaid, roomid, text_only)
+	function get_notes(areaid, roomid, search, text_only)
+    
+        gotoList = {}
 
 		local worldPath = GetInfo(66)..Trim(sanitize_filename(WorldName()))
 		local db = assert(sqlite3.open(worldPath .. ".db"))
 
-		local sql =  " SELECT b.uid, b.notes "
+		local sql =  " SELECT r.name, b.uid, b.notes "
 		sql = sql .. " FROM bookmarks b "
+        sql = sql .. " INNER JOIN rooms r ON b.uid = r.uid "
 		if (areaid ~= nil) then
-			sql = sql .. " INNER JOIN rooms r ON b.uid = r.uid "
 			sql = sql .. " WHERE r.area = " .. fixsql(areaid)
 		else
 			sql = sql .. " WHERE b.uid = " .. fixsql(roomid)
 		end
+        
+        if (search ~= nil) then
+            sql = sql .. " AND b.notes like '%" .. search .. "%'"
+        end
+        
 		sql = sql .. " ORDER BY b.uid "
 		DebugNote(sql)
 
@@ -1196,9 +1227,10 @@ http://code.google.com/p/aardwolf-scriptalicious/wiki/MapperHelp
 				local line = string.format("    note:'%s'", row.notes)
 				Hyperlink("xmapper move " .. row.uid, line, "go to room " .. row.uid, "lightblue", "black", 0)		
 			else
-				local line = string.format("    (%s) %s", row.uid, row.notes)
+				local line = string.format("%s  --  %s      (%s)    %s", index, row.name, row.uid, row.notes)
 				Hyperlink("xmapper move " .. row.uid, line, "go to room " .. row.uid, "lightblue", "black", 0)
 				print("")
+                gotoList[index] = row.uid
 			end		
 		end
 		db:close_vm()

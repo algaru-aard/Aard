@@ -53,6 +53,35 @@
    group="EarthtouchTriggers"
   >
   </trigger>
+  <trigger
+   enabled="y"
+   omit_from_output="y"
+   match="^[^\s]+ is already fully healed.$"
+   regexp="y"
+   name="ignore_party_heal"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   omit_from_output="y"
+   match="^[^\s]+ is already fully refreshed.$"
+   regexp="y"
+   name="ignore_party_refresh"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   enabled="y"
+   omit_from_output="y"
+   match="^You are already fully healed.$"
+   regexp="y"
+   name="ignore_full_heal"
+   sequence="100"
+  >
+  </trigger>
+    
+  
 </triggers>
 
 <aliases>
@@ -66,6 +95,23 @@
    script="repeat_command"
   >
   </alias>
+  
+  <alias
+   match="mobb"
+   enabled="y"
+   send_to="12"
+   sequence="100"
+  >
+  <send>require "gmcphelper"
+myRoomID = tonumber(gmcp("room.info.num"))
+mobaim = tostring(gmcp("char.status.enemy"))
+mobpct = tonumber(gmcp("char.status.enemypct"))
+if mobpct ~= nil then
+&#9;Send ("gte @r[@W"..myRoomID.."@r] [@x195"..mobaim..": @C"..mobpct.."%@r]@w")
+else
+&#9;ColourNote("darkred","", "[", "white", "", myRoomID, "darkred","","] [", "paleturquoise","", "Not Fighting", "darkred","","]")
+end</send>
+  </alias>
 
   <alias match="^et (?<et_item>.*)" 
     enabled="y" 
@@ -75,6 +121,73 @@
     send_to='12'
     script="earthtouch_command" >  
   </alias>  
+  <alias
+    match="^cspell[ ]+(.*)$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="set_cspell"
+    >
+  </alias>
+  <alias
+    match="^cspell[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="set_cspell"
+    >
+  </alias>
+  <alias
+    match="^cv[ ]*(.*)$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="cast_cspell"
+    >
+  </alias>
+  <alias
+    match="^checkport$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="check_portal"
+    >
+  </alias>
+  <alias
+    match="^setport[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="check_portal"
+    >
+  </alias>
+  
+  <alias
+    match="^setport[ ]+(?<portal>.*)$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="set_portal"
+    >
+  </alias>
+  
+  <alias
+    match="^reset_portal$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="reset_portal"
+    >
+  </alias>
+  <alias
+    match="^ent$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    send_to="10"
+    >
+    <send>mapper goto 26151</send>
+  </alias>
 
   
 </aliases>
@@ -99,6 +212,46 @@
         end
         
     end -- repeat_command
+    
+    -- Combat Spell Helpers
+
+    function set_cspell(name, line, args)
+        if args[1] then
+            cspell = args[1]
+            SetVariable("cspell", cspell)
+            SaveState()
+            Note("Set combat spell to " .. GetVariable("cspell"))
+        else
+            cspell = GetVariable("cspell") 
+            if (cspell == nil or cspell == "")
+            then
+                Note("Combat spell is unset!")
+            else
+                Note("Current combat spell is " .. cspell)
+            end
+        end
+    end 
+    
+    function cast_cspell(name, line, args)
+        cspell = GetVariable("cspell") 
+        
+        target = args[1]
+       
+        if (cspell == nil or cspell == "")
+        then
+            Note("Combat spell is unset!")
+        else
+            if (target == nil or target == "")
+            then
+                Send("cast " .. '"' .. cspell .. '"')
+            else
+                Send("cast " .. '"' .. cspell .. '"' .. " " .. '"' .. target .. '"')
+            end
+        end
+
+    end
+        
+    -- End of Combat Spell Helpers
     
     
     --  Earthtouch Helpers -- 
@@ -128,6 +281,41 @@
     end
     
     -- End of Earthtouch Helpers -- 
+    
+    -- START Portal Helpers --
+    
+    function reset_portal ()
+        portal = get_portal()
+        Send('wear "' .. portal .. '"' )
+    end
+    
+    function get_portal ()
+        current_portal = GetVariable("saved_portal")
+        if (current_portal == nil or current_portal == "" )
+        then
+            SendNoEcho("echo @b*** No portal set, defaulting to @Raard amulet@b. ***@w ")
+            SetVariable("saved_portal", "aard amulet")
+        end
+        
+        return current_portal    
+    end
+    
+    function check_portal ()
+        current_portal = get_portal()
+        SendNoEcho("echo @b*** Portal is currently @R" .. current_portal .. "@b. ***@w ")
+    end
+    
+    
+    function set_portal (name, line, args)
+        new_portal = args.portal
+        SetVariable("saved_portal", new_portal)
+        SaveState()
+        SendNoEcho("echo @b*** Setting portal to @R" .. new_portal .. "@b. ***@w ")
+    end
+    
+    
+    
+    -- End of Portal Helpers --
 
 ]]>
 </script>
