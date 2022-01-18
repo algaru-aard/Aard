@@ -18,13 +18,30 @@
 ]]>
 </description>
 
+<!-- 
+Algaru's note
+
+I did a bunch of weird stuff to this. I don't recommend you use this.
+You should use Bast's plugin directly instead. I am only putting this
+here as a backup for myself 
+-->
+
 </plugin>
 
 <!-- Aliases -->
 <aliases>
 	<alias
 		name="sscan"
-		match="^sscan$"
+		match="^scn$"
+		regexp="y"
+		enabled="y"
+		sequence="100"
+		script="toggle_special_scan"
+	>
+	</alias>
+	<alias
+		name="mobscan"
+		match="^msc$"
 		regexp="y"
 		enabled="y"
 		sequence="100"
@@ -49,7 +66,7 @@
    group="cancel_special"
   />
   <trigger
-   enabled="y"
+   enabled="n"
    match="{scan}"
    script="togglescan"
    omit_from_output="y"
@@ -58,13 +75,25 @@
    group="scantag"
   />
   <trigger
-   enabled="y"
+   enabled="n"
    match="{/scan}"
    script="togglescan"
    omit_from_output="y"
    name="scanoff"
    sequence="100"
    group="scantag"
+  />
+  <trigger
+   enabled="y"
+   match="{scan}"
+   omit_from_output="y"
+   sequence="101"
+  />
+  <trigger
+   enabled="y"
+   match="{/scan}"
+   omit_from_output="y"
+   sequence="101"
   />
   <trigger
    enabled="n"
@@ -102,9 +131,15 @@ cpmobs = {}
 gqmobs = {}
 questmob = {}
 
-function toggle_special_scan()
+function toggle_special_scan(name, line, args)
 	--print('toggling special scan')
-	special_scan = true
+    special_scan = false
+	if name == "sscan"
+    then
+        special_scan = true
+    end
+
+    phelper:enabletriggroup('scantag', true)    
     phelper:enabletriggroup('cancel_special', true)
 	Execute("scan")
 end
@@ -113,23 +148,31 @@ function cancel_special ()
 	--print('disabling special scan')
 	special_scan = false
 	phelper:enabletriggroup('cancel_special', false)
+    phelper:enabletriggroup('scantag', false)    
 end
-
 
 function togglescan(name, line, wildcards)
   if name == 'scanon' then
-    if onquest or ongq or oncp then
+    --if onquest or ongq or oncp then
       --print('turning on scan matching')
       phelper:enabletriggroup('scan', true)
-    end
+    --end
   elseif name == 'scanoff' then
     --print('turning off scan matching')
     phelper:enabletriggroup('scan', false)
+    phelper:enabletriggroup('scantag', false)
 	special_scan = false
   end
 end
 
 function checkmob(name, line, wildcards, styles)
+  
+  -- Don't care about players, just mobs
+  if string.find(line, '(Player)') 
+  then
+    return
+  end
+  
   local found = false
   local mob = wildcards[2]
   mob = mob:lower()
@@ -168,6 +211,7 @@ function checkmob(name, line, wildcards, styles)
       ColourTell(textcolour, backcolour, ' - (' .. tostring(found):upper() .. ')')
   elseif not special_scan then
     for i,v in ipairs(styles) do
+      --print("printing " .. v.text)
       ColourTell(RGBColourToName(v.textcolour), v.backcolour, v.text)
     end
     ColourNote("", "", "")
@@ -191,7 +235,6 @@ function OnPluginBroadcast (msg, id, name, text)
 
       if not firstrun and char.status and tonumber(char.status.state) == 3 then
         firstrun = true
-        SendNoEcho('tags scan on')
       end
 
     end
@@ -254,7 +297,7 @@ function OnPluginEnable ()
   ldplugin ("broadcast_quest")
   ldplugin ("broadcast_cp")
   ldplugin ("broadcast_gq")
-
+  SendNoEcho('tags scan on')
   phelper:OnPluginEnable()
 end -- OnPluginEnable
 
