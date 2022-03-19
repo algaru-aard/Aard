@@ -22,6 +22,7 @@
 
 <include name="constants.lua"/>
 
+
 <triggers>
   <trigger
    enabled="n"
@@ -195,6 +196,7 @@ end</send>
 
 <script>
 <![CDATA[
+
     function repeat_command (name, line, wildcards)
         count = tonumber(wildcards.count)
         command = wildcards.command
@@ -213,46 +215,7 @@ end</send>
         
     end -- repeat_command
     
-    -- Combat Spell Helpers
-
-    function set_cspell(name, line, args)
-        if args[1] then
-            cspell = args[1]
-            SetVariable("cspell", cspell)
-            SaveState()
-            Note("Set combat spell to " .. GetVariable("cspell"))
-        else
-            cspell = GetVariable("cspell") 
-            if (cspell == nil or cspell == "")
-            then
-                Note("Combat spell is unset!")
-            else
-                Note("Current combat spell is " .. cspell)
-            end
-        end
-    end 
-    
-    function cast_cspell(name, line, args)
-        cspell = GetVariable("cspell") 
-        
-        target = args[1]
-       
-        if (cspell == nil or cspell == "")
-        then
-            Note("Combat spell is unset!")
-        else
-            if (target == nil or target == "")
-            then
-                Send("cast " .. '"' .. cspell .. '"')
-            else
-                Send("cast " .. '"' .. cspell .. '"' .. " " .. '"' .. target .. '"')
-            end
-        end
-
-    end
-        
-    -- End of Combat Spell Helpers
-    
+   
     
     --  Earthtouch Helpers -- 
     function earthtouch_command (name, line, args)
@@ -313,9 +276,50 @@ end</send>
         SendNoEcho("echo @b*** Setting portal to @R" .. new_portal .. "@b. ***@w ")
     end
     
-    
-    
     -- End of Portal Helpers --
+    
+    -- Combat skills/spells --
+    function set_cspell_helper(cspell)
+        SetVariable("cspell", cspell)
+        SaveState()
+        ColourNote("white", "", "Set combat spell to " , "red", "", GetVariable("cspell"))
+    end    
+
+    function set_cspell(name, line, args)
+        if args[1] then
+            cspell = args[1]
+            set_cspell_helper(cspell)
+        else
+            cspell = GetVariable("cspell") 
+            if (cspell == nil or cspell == "")
+            then
+                ColourNote("white", "", "Combat spell is unset!")
+            else
+                ColourNote("white", "", "Current combat spell is " , "red", "", cspell)
+            end
+        end
+    end
+    
+    function cast_cspell(name, line, args)
+        cspell = GetVariable("cspell") 
+        
+        target = args[1]
+       
+        if (cspell == nil or cspell == "")
+        then
+            Note("Combat spell is unset!")
+        else
+            if (target == nil or target == "")
+            then
+                Send("cast " .. '"' .. cspell .. '"')
+            else
+                Send("cast " .. '"' .. cspell .. '"' .. " " .. '"' .. target .. '"')
+            end
+        end
+
+    end
+    
+    -- End of Combat Spell Helpers 
 
 ]]>
 </script>
