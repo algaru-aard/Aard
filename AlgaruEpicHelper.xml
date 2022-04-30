@@ -42,7 +42,14 @@
         regexp='y'
         script="get_axaldra_direction">
     </alias>
-
+    <alias match='^[ ]*axrun[ ]*$'  
+        enabled = 'y' 
+        ignore_case = 'y' 
+        sequence = '100' 
+        send_to='12'
+        regexp='y'
+        script="report_axaldra_run">
+    </alias>
     <alias match='^[ ]*axtime[ ]*$'  
         enabled = 'y' 
         ignore_case = 'y' 
@@ -69,6 +76,7 @@
     </alias>
 </aliases>
 
+
 <triggers>
   <trigger
    enabled="y"
@@ -80,6 +88,18 @@
   >
   <send>look;map</send>
   </trigger>
+
+  <trigger
+   enabled="y"
+   match="^You reach out and touch the crystal, which feels warm to the touch and is"
+   regexp="y"
+   name="touch_crystal"
+   send_to="12"
+   sequence="100"
+   script="axaldra_init"
+  >
+  </trigger>
+
 
   <trigger
    enabled="y"
@@ -107,6 +127,9 @@
 
 <script>
 <![CDATA[   
+
+    require "gmcphelper"
+    
     local convenience_script_id = '3d0a536e1264c566c50247b8'
     
     function titan_change_weapon (name, line, args)
@@ -143,11 +166,14 @@
     
     function axaldra_touch_crystal ()
         Send("touch crystal")
-        start_time = os.time()
-        SetVariable("axaldra_start_time", start_time)
-        SaveState()
+        axaldra_init()
     end
     
+    function axaldra_init()
+        start_time = os.time()
+        SetVariable("axaldra_start_time", start_time)
+        SaveState()    
+    end
     
     function set_axaldra_direction (name, line, args)
         direction = args.dir
@@ -156,6 +182,12 @@
     end
     
     function get_axaldra_direction ()
+        if (in_blackclaw() == false) 
+        then
+            ColourNote("magenta", "", "You're not in Black Claw Crag!")
+            return
+        end
+        
         dir = GetVariable("axaldra_dir") 
         if (dir == nil or dir == "")
         then
@@ -163,6 +195,11 @@
         else
             ColourNote("magenta", "", "Axaldra is hovering to the " , "magenta", "", dir, "magenta", "", "!")
         end
+    end
+    
+    function in_blackclaw()
+        area = tostring(gmcp("room.info.zone"))
+        return (area == 'blackclaw')
     end
     
     function end_blackclaw()
@@ -198,6 +235,24 @@
         else
             ColourNote("magenta", "", "You will be ready to challenge Axaldra again in ", 
             "magenta", "", convert_time_to_string(time_remaining), "magenta", "", "!") 
+        end
+    end
+    
+    function report_axaldra_run()
+        if (in_blackclaw() == false) 
+        then
+            ColourNote("magenta", "", "You're not in Black Claw Crag!")
+            return
+        end
+        
+        start_time = GetVariable("axaldra_start_time")
+        if (start_time == nil or start_time == "" or start_time == 0)
+        then
+            ColourNote("magenta", "", "You don't remember when you started battling Axaldra!")
+            return
+        else 
+            end_time = os.time()
+            ColourNote("magenta", "", "You have been battling Axaldra for " .. convert_time_to_string(end_time - start_time) .. "!")
         end
     end
     

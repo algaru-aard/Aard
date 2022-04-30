@@ -40,6 +40,15 @@ here as a backup for myself
 	>
 	</alias>
 	<alias
+		name="sv"
+		match="^sv[ ]*(.*)$"
+		regexp="y"
+		enabled="y"
+		sequence="100"
+		script="toggle_special_scan"
+	>
+	</alias>
+	<alias
 		name="mobscan"
 		match="^msc[ ]*(.*)$"
 		regexp="y"
@@ -122,13 +131,23 @@ questmob = {}
 function toggle_special_scan(name, line, args)
 	--print('toggling special scan')
     special_scan = ""
-	if name == "sscan" or name == "mobscan"
+	if name == "sscan" or name == "mobscan" 
     then
         special_scan = name
+    elseif name == 'sv'
+    then
+        special_scan = "sscan"
     end
 
     phelper:enabletriggroup('cancel_special', true)
-	Execute("scan " .. args[1])
+    
+    if name == 'sv' then
+        scancmd = 'survey'
+    else
+        scancmd = 'scan'
+    end
+    
+	Execute(scancmd .. " " .. args[1])
 end
 
 function cancel_special ()
