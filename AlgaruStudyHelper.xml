@@ -20,24 +20,24 @@
 </plugin>
 
 <aliases>
-	<alias
-		name="study"
-		match="^study($|[ ]+(.*)$)"
-		regexp="y"
-		enabled="y"
-		sequence="100"
-		script="start_study"
-	>
-	</alias>
-	<alias
-		name="study_test"
-		match="^study_test$"
-		regexp="y"
-		enabled="y"
-		sequence="100"
-		script="test_colors"
-	>
-	</alias>
+  <alias
+   name="study"
+   match="^study($|[ ]+(.*)$)"
+   regexp="y"
+   enabled="y"
+   sequence="100"
+   script="start_study"
+  >
+  </alias>
+  <alias
+   name="study_test"
+   match="^study_test$"
+   regexp="y"
+   enabled="y"
+   sequence="100"
+   script="test_colors"
+  >
+  </alias>
 </aliases>
 
 <triggers>
