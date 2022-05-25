@@ -49,14 +49,16 @@
    send_to="10"
    sequence="100"
    omit_from_output="y"
+   keep_evaluating = "y"
    script="stop_study"
   >
   </trigger>
   <trigger
    enabled="n"
-   match="^(?<character>.*) (?<damage_desc>is in perfect health|has a few minor scratches|is showing a few grazes|is bleeding lightly|has some small wounds and bruises|is showing a few battle scars|has quite a few wounds|has some big nasty wounds and scratches|has some very nasty wounds|needs a hospital|is gravely injured|is at death's door)\.$"
+   match="^(?<character>.*) (?<verb>(is|are|has|have|needs|need)) (?<damage_desc>in perfect health|a few minor scratches|showing a few grazes|bleeding lightly|some small wounds and bruises|showing a few battle scars|quite a few wounds|some big nasty wounds and scratches|some very nasty wounds|a hospital|gravely injured|at death's door)\.$"
    script="print_one_study_line"
    omit_from_output="y"
+   keep_evaluating = "y"
    name="study_health_trigger"
    sequence="100"
    regexp="y"
@@ -68,33 +70,34 @@
 <![CDATA[
 
 damage_table = {
-    ["is in perfect health"]                    = {["color"] = "darkgreen",     ["range"] = " 100% "},
-    ["has a few minor scratches"]               = {["color"] = "green",         ["range"] = "95-99%"},
-    ["is showing a few grazes"]                 = {["color"] = "limegreen",     ["range"] = "85-94%"},
-    ["is bleeding lightly"]                     = {["color"] = "lime",          ["range"] = "75-84%"},
-    ["has some small wounds and bruises"]       = {["color"] = "lawngreen",     ["range"] = "65-74%"},
-    ["is showing a few battle scars"]           = {["color"] = "greenyellow",   ["range"] = "55-64%"},
-    ["has quite a few wounds"]                  = {["color"] = "yellow",        ["range"] = "45-54%"},
-    ["has some big nasty wounds and scratches"] = {["color"] = "orange",        ["range"] = "35-44%"},
-    ["has some very nasty wounds"]              = {["color"] = "darkorange",    ["range"] = "25-34%"},
-    ["needs a hospital"]                        = {["color"] = "orangered",     ["range"] = "15-24%"},
-    ["is gravely injured"]                      = {["color"] = "firebrick",     ["range"] = " 5-14%"},
-    ["is at death's door"]                      = {["color"] = "darkred",       ["range"] = " 0-4% "}    
+    ["in perfect health"]                    = {["color"] = "darkgreen",     ["range"] = " 100% "},
+    ["in perfect health"]                    = {["color"] = "darkgreen",     ["range"] = " 100% "},
+    ["a few minor scratches"]                = {["color"] = "green",         ["range"] = "95-99%"},
+    ["showing a few grazes"]                 = {["color"] = "limegreen",     ["range"] = "85-94%"},
+    ["bleeding lightly"]                     = {["color"] = "lime",          ["range"] = "75-84%"},
+    ["some small wounds and bruises"]        = {["color"] = "lawngreen",     ["range"] = "65-74%"},
+    ["showing a few battle scars"]           = {["color"] = "greenyellow",   ["range"] = "55-64%"},
+    ["quite a few wounds"]                   = {["color"] = "yellow",        ["range"] = "45-54%"},
+    ["some big nasty wounds and scratches"]  = {["color"] = "orange",        ["range"] = "35-44%"},
+    ["some very nasty wounds"]               = {["color"] = "darkorange",    ["range"] = "25-34%"},
+    ["a hospital"]                           = {["color"] = "orangered",     ["range"] = "15-24%"},
+    ["gravely injured"]                      = {["color"] = "firebrick",     ["range"] = " 5-14%"},
+    ["at death's door"]                      = {["color"] = "darkred",       ["range"] = " 0-4% "}    
 }
 
 damage_order = {
-    "is in perfect health", 
-    "has a few minor scratches", 
-    "is showing a few grazes", 
-    "is bleeding lightly", 
-    "has some small wounds and bruises", 
-    "is showing a few battle scars", 
-    "has quite a few wounds", 
-    "has some big nasty wounds and scratches", 
-    "has some very nasty wounds", 
-    "needs a hospital", 
-    "is gravely injured", 
-    "is at death's door"
+    "in perfect health", 
+    "a few minor scratches", 
+    "showing a few grazes", 
+    "bleeding lightly", 
+    "some small wounds and bruises", 
+    "showing a few battle scars", 
+    "quite a few wounds", 
+    "some big nasty wounds and scratches", 
+    "some very nasty wounds", 
+    "a hospital", 
+    "gravely injured", 
+    "at death's door"
 }
 
 default_color = "lightgray"
