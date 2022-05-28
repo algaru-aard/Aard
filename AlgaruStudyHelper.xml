@@ -71,7 +71,6 @@
 
 damage_table = {
     ["in perfect health"]                    = {["color"] = "darkgreen",     ["range"] = " 100% "},
-    ["in perfect health"]                    = {["color"] = "darkgreen",     ["range"] = " 100% "},
     ["a few minor scratches"]                = {["color"] = "green",         ["range"] = "95-99%"},
     ["showing a few grazes"]                 = {["color"] = "limegreen",     ["range"] = "85-94%"},
     ["bleeding lightly"]                     = {["color"] = "lime",          ["range"] = "75-84%"},
