@@ -16,13 +16,37 @@
    requires="5.07"
    version="1.0"
    >
+<description trim="y">
+
+<![CDATA[
+Use this plugin to augment "study" output with info showing each character's health range.
+
+Example:
+
+[ 100% ] A giant tortoise is in perfect health.
+[95-99%] You have a few minor scratches.
+[45-54%] A tentacle-faced demon has quite a few wounds.
+
+Usage: 
+    study <optional target>     - standard study
+    pstudy <optional target>    - filter only for players
+    mstudy <optional target>    - filter only for mobs
+    study_help                  - print this help
+    study_test                  - display sample output
+    
+Caveats:
+    * pstudy and mstudy will probably not work as expected in safe rooms
+    * pstudy and mstudy combine study output with "consider" so there's a bit of lag
+        
+]]> 
+</description>
 
 </plugin>
 
 <aliases>
   <alias
    name="study"
-   match="^study($|[ ]+(.*)$)"
+   match="^(?<studymode>p|m|)study(?<studytarget>$|[ ]+(.*)$)"
    regexp="y"
    enabled="y"
    sequence="100"
@@ -36,6 +60,15 @@
    enabled="y"
    sequence="100"
    script="test_colors"
+  >
+  </alias>
+  <alias
+   name="studyhelp"
+   match="^(study_help|studyhelp)$"
+   regexp="y"
+   enabled="y"
+   sequence="100"
+   script="OnHelp"
   >
   </alias>
 </aliases>
@@ -64,10 +97,39 @@
    regexp="y"
    group="study_health_triggers"
   />
-</triggers>
+
+<!-- For grabbing mob names --> 
+  <trigger
+   enabled="n"
+   match="(You would stomp |No Problem! |Best run away from |Challenging |If you killed |You would be completely annihilated by |.+ would smite you for killing |.* would not approve of you killing )(?<mob>.*) (into the ground|is weak compared to you|while you can|would be either very brave|!|\?)"
+   script="build_mob_list"
+   omit_from_output="y"
+   keep_evaluating = "y"
+   name="build_mob_list_1"
+   sequence="100"
+   regexp="y"
+   group="mob_list_group"
+  /> 
+
+  <trigger
+   enabled="n"
+   match="(?<mob>.*)( would be easy, but is it even worth the work out\?| looks a little worried about the idea\.| should be a fair fight!| snickers nervously\.| chuckles at the thought of you fighting .*\.| would crush you like a bug!| would dance on your grave!| says 'BEGONE FROM MY SIGHT unworthy!'| has divine protection\.| has already been challenged\.)$"
+   script="build_mob_list"
+   omit_from_output="y"
+   keep_evaluating = "y"
+   name="build_mob_list_2"
+   sequence="100"
+   regexp="y"
+   group="mob_list_group"
+  /> 
+  </triggers>
+
 
 <script>
 <![CDATA[
+
+mob_list = {}
+study_mode = ''
 
 damage_table = {
     ["in perfect health"]                    = {["color"] = "darkgreen",     ["range"] = " 100% "},
@@ -103,21 +165,36 @@ default_color = "lightgray"
 default_range = "????"
 
 function start_study(name, line, args)
-    Send("study " .. args[1])
+    study_mode = args.studymode
+    if (study_mode == 'p' or study_mode == 'm')
+    then
+        EnableTriggerGroup("mob_list_group", true)
+        Send("consider all")
+    end
+    
+    mob_list = {}
+    Send("study " .. args.studytarget)
     SendNoEcho("echo stop_study")
     EnableTrigger("study_health_trigger", true)  
 end
 
 function stop_study()
     EnableTrigger("study_health_trigger", false) 
+    EnableTriggerGroup("mob_list_group", false)
 end
 
 function print_one_study_line(name, line, args)
     health_string = args.damage_desc
     color = damage_table[args.damage_desc]["color"]
     range = damage_table[args.damage_desc]["range"]
+    local mob_or_player = is_mob(args.character) 
   
-    ColourNote(default_color, "", "[", color, "", range, default_color, "", "] ", default_color, "", line)
+    if (study_mode == '' or
+        (study_mode == 'm' and mob_or_player == true) or
+        (study_mode == 'p' and mob_or_player == false))
+    then
+        ColourNote(default_color, "", "[", color, "", range, default_color, "", "] ", default_color, "", line)
+    end
 end
 
 function test_colors ()
@@ -127,6 +204,69 @@ function test_colors ()
         ColourNote(default_color, "", "[", color, "", range, default_color, "", "] " .. damage)
     end
 end
+
+function build_mob_list(name, line, args)
+    mob = strip_mob_flags(args.mob)
+    table.insert(mob_list, mob)
+end
+
+function strip_mob_flags(mob)
+    local cleaned_mob = mob
+    -- Yeah, I know, it's ugly, wanna fight about it? 
+    local replacements = {
+        ["%(Animated%)%s*"] = "",       ["%(A%)%s*"] = "",
+        ["%(Angry%)%s*"] = "",          ["%(Charmed%)%s*"] = "",
+        ["%(C%)%s*"] = "",              ["%(Diseased%)%s*"] = "",
+        ["%(D%)%s*"] = "",              ["%(Golden Aura%)%s*"] = "",
+        ["%(G%)%s*"] = "",              ["%(Hidden%)%s*"] = "",
+        ["%(H%)%s*"] = "",              ["%(Invis%)%s*"] = "",
+        ["%(I%)%s*"] = "",              ["%(Marked%)%s*"] = "",
+        ["%(X%)%s*"] = "",              ["%(OPK%)%s*"] = "",
+        ["%(Player%)%s*"] = "",         ["%(P%)%s*"] = "",
+        ["%(Red Aura%)%s*"] = "",       ["%(R%)%s*"] = "",
+        ["%(Stealth%)%s*"] = "",        ["%(S%)%s*"] = "",
+        ["%(Translucent%)%s*"] = "",    ["%(T%)%s*"] = "",
+        ["%(Undead%)%s*"] = "",         ["%(U%)%s*"] = "",
+        ["%(White Aura%)%s*"] = "",     ["%(W%)%s*"] = "",
+        ["%(Wounded%)%s*"] = ""
+    }
+    
+    for aura in pairs(replacements) do 
+        cleaned_mob = string.gsub((cleaned_mob or mob), aura,"") 
+    end
+    
+    return cleaned_mob
+end
+
+function is_mob (target)
+    for index, value in ipairs(mob_list) do
+        if value == target then
+            return true
+        end
+    end
+
+    return false
+end
+
+function OnHelp ()
+  ColourNote ("magenta", "", world.GetPluginInfo (world.GetPluginID (), 3))
+  ColourNote ("magenta", "", "")
+  ColourNote ("magenta", "", "Sample output with color:")
+  test_colors()
+end
+
+function OnPluginEnable()
+    mob_list = {}
+    study_mode = ''
+    OnHelp()
+end
+
+function OnPluginInstall()
+    mob_list = {}
+    study_mode = ''
+    OnHelp()
+end
+
 
 ]]>
 </script>
