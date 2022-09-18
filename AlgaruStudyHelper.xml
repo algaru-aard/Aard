@@ -228,7 +228,7 @@ function strip_mob_flags(mob)
         ["%(Translucent%)%s*"] = "",    ["%(T%)%s*"] = "",
         ["%(Undead%)%s*"] = "",         ["%(U%)%s*"] = "",
         ["%(White Aura%)%s*"] = "",     ["%(W%)%s*"] = "",
-        ["%(Wounded%)%s*"] = ""
+        ["%(Wounded%)%s*"] = "",        ["%(Aimed%)%s*"] = ""
     }
     
     for aura in pairs(replacements) do 
