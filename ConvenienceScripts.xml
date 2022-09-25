@@ -82,7 +82,28 @@
   >
   </trigger>
     
-  
+  <trigger
+   enabled="y"
+   omit_from_output="n"
+   match="^(?<greentar>.*) appears much weaker and extremely vulnerable.$"
+   regexp="y"
+   name="green_death"
+   sequence="100"
+   script="landed_green_death"
+  >
+  </trigger>
+
+  <trigger
+   enabled="y"
+   omit_from_output="y"
+   match="^You sense that life will return to this area in roughly (?<mintime>\d+)-(?<maxtime>\d+) minutes.$"
+   regexp="y"
+   name="catch_sense_life_mins"
+   sequence="100"
+   script="print_sense_life"
+  >
+  </trigger>
+    
 </triggers>
 
 <aliases>
@@ -147,6 +168,30 @@ end</send>
     >
   </alias>
   <alias
+    match="^pushtar[ ]+(.*)$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="set_pushtar"
+    >
+  </alias>
+  <alias
+    match="^pushtar[ ]*$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="set_pushtar"
+    >
+  </alias>
+  <alias
+    match="^pu[ ]+(.*)$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="execute_push"
+    >
+  </alias>
+  <alias
     match="^checkport$"
     regexp="y"
     enabled="y"
@@ -189,6 +234,14 @@ end</send>
     >
     <send>mapper goto 26151</send>
   </alias>
+  <alias
+    match="^csl$"
+    regexp="y"
+    enabled="y"
+    sequence="101"
+    script="execute_sense_life"
+    >
+  </alias>
 
   
 </aliases>
@@ -196,6 +249,11 @@ end</send>
 
 <script>
 <![CDATA[
+    function landed_green_death (name, line, args)
+        greentar = args.greentar
+        Send ("gtell @GGreen death@W (poison/dis) landed on " .. greentar .. ".")
+        -- Your acidic venom burns away Jacob's armor.
+    end
 
     function repeat_command (name, line, wildcards)
         count = tonumber(wildcards.count)
@@ -214,8 +272,7 @@ end</send>
         end
         
     end -- repeat_command
-    
-   
+
     
     --  Earthtouch Helpers -- 
     function earthtouch_command (name, line, args)
@@ -320,6 +377,92 @@ end</send>
     end
     
     -- End of Combat Spell Helpers 
+    
+    -- Push helpers --   
+    function set_pushtar(name, line, args)
+        if args[1] then
+            target = args[1]
+            set_push_target(target)
+        else
+            target = GetVariable("pushtar") 
+            if (target == nil or target == "")
+            then
+                ColourNote("white", "", "Push target is unset!")
+            else
+                ColourNote("white", "", "Push target is " , "red", "", target)
+            end
+        end        
+    end
+    
+    function set_push_target (target)
+        SetVariable("pushtar", target)
+        SaveState()
+        ColourNote("white", "", "Set push target to " , "red", "", GetVariable("pushtar"))        
+    end
+    
+    function execute_push(name, line, args)
+        target = GetVariable("pushtar")
+        dir = args[1]
+        
+        if (target == nil or target == "") 
+        then
+            ColourNote("white", "", "Target is unset!")
+        else
+            Send("push " .. target .. " " .. dir)
+            Send(dir)
+        end
+    end
+
+    -- Sense life stuff .. WIP --
+
+    function execute_sense_life()
+        Send("cast 'sense life'")
+    end
+    
+    function print_sense_life(name, line, args)  
+        minutes = tonumber(args.maxtime)
+        converted_time = convert_time(minutes)
+    
+        approx_time = os.date("%A %I:%M:%S%p local", os.time() + 60*(minutes))
+
+        ColourNote("lightgray", "", "Estimated repop: " 
+            .. args.mintime .. "-" .. args.maxtime .. "min",
+            "lightgray", "", " " .. converted_time .. "(" .. approx_time .. ")")
+    end
+    
+    function convert_time (minutes) 
+        hours = 0
+        remaining_minutes = minutes
+        days = 0
+            
+        if minutes <= 60 then return "" end
+        
+        hours = math.floor(minutes / 60)
+        remaining_hours = hours
+        
+        remaining_minutes = minutes % 60
+       
+        if hours > 24 then
+            days = math.floor(hours / 24);
+            remaining_hours = hours % 24
+        end
+        
+        -- work with days, remaining_hours, remaining_minutes
+        output_string = ""
+        if days > 0 then
+            output_string = days .. "d "
+        end
+        
+        if remaining_hours > 0 then
+            output_string = output_string .. remaining_hours .. "h "
+        end
+        
+        if remaining_minutes > 0 then
+            output_string = output_string .. remaining_minutes .. "m"
+        end
+        
+        return "(" .. output_string .. ")"
+    end
 
 ]]>
 </script>
