@@ -101,7 +101,7 @@ Caveats:
 <!-- For grabbing mob names --> 
   <trigger
    enabled="n"
-   match="(You would stomp |No Problem! |Best run away from |Challenging |If you killed |You would be completely annihilated by |.+ would smite you for killing |.* would not approve of you killing )(?<mob>.*) (into the ground|is weak compared to you|while you can|would be either very brave|!|\?)"
+   match="(You would stomp |No Problem! |Best run away from |Challenging |If you killed |You would be completely annihilated by |.+ would smite you for killing |.* would not approve of you killing )(?<mob>.*)[ ]?(into the ground|is weak compared to you|while you can|would be either very brave|\!|\?)"
    script="build_mob_list"
    omit_from_output="y"
    keep_evaluating = "y"
@@ -207,6 +207,7 @@ end
 
 function build_mob_list(name, line, args)
     mob = strip_mob_flags(args.mob)
+    -- Note("Identified " .. mob .. " as a mob")
     table.insert(mob_list, mob)
 end
 
