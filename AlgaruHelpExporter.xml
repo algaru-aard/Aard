@@ -58,6 +58,10 @@
 	script="end_single_help"
 	omit_from_output="y"
 	>
+  <send>
+	EnableTrigger("end_single_help", false)
+	EnableTrigger("capture_line_from_help", false)
+  </send>
   </trigger> 
   <trigger
 	enabled="n"
@@ -177,7 +181,7 @@
 	
 	--- Here be dragons... --- 
 	function print_to_file (help_array)
-		ColourNote("white", "", "Printing Single Help:")
+		--ColourNote("white", "", "Printing Single Help:")
 		second_line = help_array[2]
 		
 		-- Every help will start with this, can build keywords by looking at this line
@@ -191,7 +195,7 @@
 		help_file = assert(io.open(pathed_file, "w"))
 		ColourNote("white", "", "Opened " .. pathed_file .. " for write.")
 
-		ColourNote("white", "", "----------------------------------------------------------------------------")
+		--ColourNote("white", "", "----------------------------------------------------------------------------")
 		for _, line in ipairs(help_array) do
 			if (string.match(line, '{helpbody}') or string.match(line, '{/helpbody}')) then goto continue end
 			line = string.gsub(line, '{helpkeywords}', '')
@@ -200,7 +204,7 @@
 			::continue::
 		end
 		help_file:close()
-		ColourNote("white", "", "----------------------------------------------------------------------------")
+		--ColourNote("white", "", "----------------------------------------------------------------------------")
 	end
 ]]>
 
