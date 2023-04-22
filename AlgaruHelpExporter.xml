@@ -43,6 +43,8 @@
   >
   <send>
 	help_data = {}
+	EnableTrigger("end_single_help", true)
+	EnableTrigger("capture_line_from_help", true)
   </send>
   </trigger> 
   <trigger
@@ -114,6 +116,7 @@
 	
 	list_of_helps = {}
 	help_data = {}
+	WAIT_TIME=1
 	
 	function begin_help_script (name, line, args)
 		list_of_helps = {}
@@ -122,6 +125,8 @@
 		SendNoEcho("index " .. args.letter)
 		SendNoEcho("tags helps on")
 		EnableTriggerGroup("capture_index_group", true)
+		assert(os.execute('mkdir helps\\' .. args.letter))
+		ColourNote("white", "", 'Created directory helps\\' .. args.letter)
 		SendNoEcho("echo DONE WITH INDEX SEARCH")
 	end
 	
@@ -141,17 +146,19 @@
 		EnableTriggerGroup("capture_index_group", false)
 		EnableTriggerGroup("capture_single_help_group", true)
 		process_helps()
-		SendNoEcho("tags helps off")
 	end
 	
 	function process_helps ()
-		for _, help_topic in ipairs (list_of_helps) do
-			-- Note("help " .. help_topic)
-			SendNoEcho("help " .. help_topic)
-		end
-		
-		SendNoEcho("echo Finished Parsing Helps")
-		
+		require "wait"
+		wait.make (function()
+			for _, help_topic in ipairs (list_of_helps) do
+				SendNoEcho("help " .. help_topic)
+				wait.time(WAIT_TIME)
+			end
+
+			SendNoEcho("echo Finished Parsing Helps")
+			SendNoEcho("tags helps off")
+		end)				
 	end
 	
 	function capture_line_from_help (name, line, args)
@@ -161,7 +168,6 @@
 	
 	function stop_help_processing ()
 		EnableTriggerGroup("capture_single_help_group", false)	
-
 	end
 
 	
@@ -179,14 +185,11 @@
 		keywords = string.lower(string.sub(second_line, string.len(sentinel), string.len(second_line)))
 		filename = keywords:gsub('%W', '') .. ".txt"
 		first_letter = string.sub(filename,1,1)
-
-		os.execute('mkdir helps\\' .. first_letter)
 		
 		pathed_file = 'helps\\' .. first_letter .. '\\' .. filename;
 
 		help_file = assert(io.open(pathed_file, "w"))
 		ColourNote("white", "", "Opened " .. pathed_file .. " for write.")
-
 
 		ColourNote("white", "", "----------------------------------------------------------------------------")
 		for _, line in ipairs(help_array) do
