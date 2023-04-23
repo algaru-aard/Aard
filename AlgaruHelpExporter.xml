@@ -26,8 +26,8 @@ Help File Exporter
 Use this plugin to copy help files to disk. 
 
 Usage::
-	capturehelp index <letter> - dump all the helps starting with <letter>
-	capturehelp help           - display this help
+    capturehelp index <letter> - dump all the helps starting with <letter>
+    capturehelp help           - display this help
 
  I recommend sitting still while doing this for best results.
  Walking around will probably be ok.
@@ -61,10 +61,10 @@ Usage::
     sequence = '100' 
     send_to='12'
     regexp='y'
-	>
-	<send>
-		OnHelp()
-	</send>
+    >
+    <send>
+        OnHelp()
+    </send>
   </alias>
 </aliases>
 
@@ -213,64 +213,64 @@ Usage::
     function trim_space(s)
         return (s:gsub("^%s*(.-)%s*$", "%1"))
     end
-	
-	function array_copy(old)
-		new_array = {}
-		for _, value in ipairs(old) do
-			table.insert(new_array, value)
-		end
-		return new_array
-	end
+    
+    function array_copy(old)
+        new_array = {}
+        for _, value in ipairs(old) do
+            table.insert(new_array, value)
+        end
+        return new_array
+    end
     
     --- Here be dragons... --- 
     function print_to_file (help_array)
         require "wait"
         wait.make (function()
-		
-			second_line = help_array[2]
-			
-			-- Every help will start with this, can build keywords by looking at this line
-			sentinel = '{helpkeywords}Help Keywords : '
-			keywords = string.lower(string.sub(second_line, string.len(sentinel), string.len(second_line)))
-			filename = keywords:gsub('%W', '') .. ".txt"
-			first_letter = string.sub(filename,1,1)
-			base_dir = GetInfo(68)
-			new_dir = "helps\\" .. first_letter
-			mkdir_cmd = "/C mkdir " .. new_dir
-		
-			-- bit of a hack here. shellexecute seems to be async
-			-- need to wait enough time for the directory to be created 
-			utils.shellexecute("cmd", mkdir_cmd, base_dir, "open", 0)
-			wait.time(.1)
+        
+            second_line = help_array[2]
+            
+            -- Every help will start with this, can build keywords by looking at this line
+            sentinel = '{helpkeywords}Help Keywords : '
+            keywords = string.lower(string.sub(second_line, string.len(sentinel), string.len(second_line)))
+            filename = keywords:gsub('%W', '') .. ".txt"
+            first_letter = string.sub(filename,1,1)
+            base_dir = GetInfo(68)
+            new_dir = "helps\\" .. first_letter
+            mkdir_cmd = "/C mkdir " .. new_dir
+        
+            -- bit of a hack here. shellexecute seems to be async
+            -- need to wait enough time for the directory to be created 
+            utils.shellexecute("cmd", mkdir_cmd, base_dir, "open", 0)
+            wait.time(.1)
 
-			pathed_file = base_dir .. 'helps\\' .. first_letter .. '\\' .. filename;
+            pathed_file = base_dir .. 'helps\\' .. first_letter .. '\\' .. filename;
 
-			help_file = assert(io.open(pathed_file, "w"))
-			ColourNote("white", "", "Opened " .. pathed_file .. " for write.")
+            help_file = assert(io.open(pathed_file, "w"))
+            ColourNote("white", "", "Opened " .. pathed_file .. " for write.")
 
-			for _, line in ipairs(help_array) do
-				if (string.match(line, '{helpbody}') or string.match(line, '{/helpbody}')) then goto continue end
-				line = string.gsub(line, '{helpkeywords}', '')
-				-- Note(line)
-				help_file:write(line .. "\r")
-				::continue::
-			end
-			help_file:close()
-		end)
+            for _, line in ipairs(help_array) do
+                if (string.match(line, '{helpbody}') or string.match(line, '{/helpbody}')) then goto continue end
+                line = string.gsub(line, '{helpkeywords}', '')
+                -- Note(line)
+                help_file:write(line .. "\r")
+                ::continue::
+            end
+            help_file:close()
+        end)
     end
 
-	function OnHelp ()
-		ColourNote ("LightSteelBlue", "", world.GetPluginInfo (world.GetPluginID (), 3))
-	end
+    function OnHelp ()
+        ColourNote ("LightSteelBlue", "", world.GetPluginInfo (world.GetPluginID (), 3))
+    end
 
-	function OnPluginEnable()
-		OnHelp()
-	end
+    function OnPluginEnable()
+        OnHelp()
+    end
 
-	function OnPluginInstall()
-		OnHelp()
-	end
-		
+    function OnPluginInstall()
+        OnHelp()
+    end
+        
 ]]>
 
 </script>
