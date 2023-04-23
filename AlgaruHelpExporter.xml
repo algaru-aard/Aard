@@ -21,93 +21,93 @@
 
 <aliases>
   <alias match='^capturehelp index (?<letter>\w{1})[ ]*$'  
-	enabled = 'y' 
-	ignore_case = 'y' 
-	sequence = '100' 
-	send_to='12'
-	regexp='y'
-	script="begin_help_script">
+    enabled = 'y' 
+    ignore_case = 'y' 
+    sequence = '100' 
+    send_to='12'
+    regexp='y'
+    script="begin_help_script">
   </alias>
 </aliases>
 
 <triggers>
   <trigger
-	enabled="n"
-	match="^{help}$"
-	regexp="y"
-	name="start_single_help"
-	group="capture_single_help_group"
-	send_to="12"
-	sequence="1"
-	omit_from_output="y"
+    enabled="n"
+    match="^{help}$"
+    regexp="y"
+    name="start_single_help"
+    group="capture_single_help_group"
+    send_to="12"
+    sequence="1"
+    omit_from_output="y"
   >
   <send>
-	help_data = {}
-	EnableTrigger("end_single_help", true)
-	EnableTrigger("capture_line_from_help", true)
+    help_data = {}
+    EnableTrigger("end_single_help", true)
+    EnableTrigger("capture_line_from_help", true)
   </send>
   </trigger> 
   <trigger
-	enabled="n"
-	match="{/help}"
-	regexp="n"
-	name="end_single_help"
-	send_to="12"
-	sequence="1"
-	group="capture_single_help_group"
-	script="end_single_help"
-	omit_from_output="y"
-	>
+    enabled="n"
+    match="{/help}"
+    regexp="n"
+    name="end_single_help"
+    send_to="12"
+    sequence="1"
+    group="capture_single_help_group"
+    script="end_single_help"
+    omit_from_output="y"
+    >
   <send>
-	EnableTrigger("end_single_help", false)
-	EnableTrigger("capture_line_from_help", false)
+    EnableTrigger("end_single_help", false)
+    EnableTrigger("capture_line_from_help", false)
   </send>
   </trigger> 
   <trigger
-	enabled="n"
-	match="^.*$"
-	regexp="y"
-	name="capture_line_from_help"
-	group="capture_single_help_group"
-	send_to="10"
-	sequence="100"
-	script="capture_line_from_help"
-	omit_from_output="y"
-	>
+    enabled="n"
+    match="^.*$"
+    regexp="y"
+    name="capture_line_from_help"
+    group="capture_single_help_group"
+    send_to="10"
+    sequence="100"
+    script="capture_line_from_help"
+    omit_from_output="y"
+    >
   </trigger> 
   <trigger
-	enabled="n"
-	match="^(?<help_string>[^:]{20}):"
-	regexp="y"
-	name="capture_name_from_index"
-	group="capture_index_group"
-	script="capture_string_from_index"
-	send_to="10"
-	sequence="100"
-	>
+    enabled="n"
+    match="^(?<help_string>[^:]{20}):"
+    regexp="y"
+    name="capture_name_from_index"
+    group="capture_index_group"
+    script="capture_string_from_index"
+    send_to="10"
+    sequence="100"
+    >
   </trigger>
   <trigger
-	enabled="n"
-	omit_from_output="y"
-	match="^DONE WITH INDEX SEARCH$"
-	regexp="y"
-	name="stop_index_capture"
-	group="capture_index_group"
-	script="stop_index_capture"
-	send_to="10"
-	sequence="1"
-	>
+    enabled="n"
+    omit_from_output="y"
+    match="^DONE WITH INDEX SEARCH$"
+    regexp="y"
+    name="stop_index_capture"
+    group="capture_index_group"
+    script="stop_index_capture"
+    send_to="10"
+    sequence="1"
+    >
   </trigger> 
   <trigger
-	enabled="y"
-	omit_from_output="y"
-	match="^Finished Parsing Helps$"
-	regexp="y"
-	name="stop_help_processing"
-	script="stop_help_processing"
-	send_to="10"
-	sequence="1"
-	>
+    enabled="y"
+    omit_from_output="y"
+    match="^Finished Parsing Helps$"
+    regexp="y"
+    name="stop_help_processing"
+    script="stop_help_processing"
+    send_to="10"
+    sequence="1"
+    >
   </trigger>    
 </triggers>
 
@@ -115,97 +115,107 @@
 <![CDATA[   
 
     require "gmcphelper"
-	-- Below has some helpers to dump arrays or tables
-	-- require "algaru_common"
-	
-	list_of_helps = {}
-	help_data = {}
-	WAIT_TIME=1
-	
-	function begin_help_script (name, line, args)
-		list_of_helps = {}
-		help_data = {}
-		ColourNote("white", "", "Capturing the following help files:")
-		SendNoEcho("index " .. args.letter)
-		SendNoEcho("tags helps on")
-		EnableTriggerGroup("capture_index_group", true)
-		assert(os.execute('mkdir helps\\' .. args.letter))
-		ColourNote("white", "", 'Created directory helps\\' .. args.letter)
-		SendNoEcho("echo DONE WITH INDEX SEARCH")
-	end
-	
-	function end_single_help (name, line, args)
-		-- Note("Stopping Single Help Capture")
-		print_to_file(help_data)
-		-- Note(table_dump(help_data))
-		-- table.insert(list_of_helps, help_data)
-	end
-	
-	function capture_string_from_index (name, line, args)
-		-- Note("Captured " .. args.help_string)
-		table.insert(list_of_helps, trim_space(args.help_string))
-	end
-	
-	function stop_index_capture (name, line, args)
-		EnableTriggerGroup("capture_index_group", false)
-		EnableTriggerGroup("capture_single_help_group", true)
-		process_helps()
-	end
-	
-	function process_helps ()
-		require "wait"
-		wait.make (function()
-			for _, help_topic in ipairs (list_of_helps) do
-				SendNoEcho("help " .. help_topic)
-				wait.time(WAIT_TIME)
+    -- Below has some helpers to dump arrays or tables
+    -- require "algaru_common"
+    
+    list_of_helps = {}
+    help_data = {}
+    WAIT_TIME=1
+    
+    function begin_help_script (name, line, args)
+        list_of_helps = {}
+        help_data = {}
+        ColourNote("white", "", "Capturing the following help files:")
+        SendNoEcho("index " .. args.letter)
+        SendNoEcho("tags helps on")
+        EnableTriggerGroup("capture_index_group", true)
+        -- assert(os.execute('mkdir helps\\' .. args.letter))
+        -- ColourNote("white", "", 'Created directory helps\\' .. args.letter)
+        SendNoEcho("echo DONE WITH INDEX SEARCH")
+    end
+    
+    function end_single_help (name, line, args)
+        -- Note("Stopping Single Help Capture")
+        print_to_file(help_data)
+        -- Note(table_dump(help_data))
+        -- table.insert(list_of_helps, help_data)
+    end
+    
+    function capture_string_from_index (name, line, args)
+        -- Note("Captured " .. args.help_string)
+        table.insert(list_of_helps, trim_space(args.help_string))
+    end
+    
+    function stop_index_capture (name, line, args)
+        EnableTriggerGroup("capture_index_group", false)
+        EnableTriggerGroup("capture_single_help_group", true)
+        process_helps()
+    end
+    
+    function process_helps ()
+        require "wait"
+        wait.make (function()
+            for _, help_topic in ipairs (list_of_helps) do
+                SendNoEcho("help " .. help_topic)
+                wait.time(WAIT_TIME)
+            end
+
+            SendNoEcho("echo Finished Parsing Helps")
+            SendNoEcho("tags helps off")
+        end)                
+    end
+    
+    function capture_line_from_help (name, line, args)
+        -- Note("Capturing " .. line)
+        table.insert(help_data, line)
+    end
+    
+    function stop_help_processing ()
+        EnableTriggerGroup("capture_single_help_group", false)  
+    end
+
+    
+    function trim_space(s)
+        return (s:gsub("^%s*(.-)%s*$", "%1"))
+    end
+    
+    --- Here be dragons... --- 
+    function print_to_file (help_array)
+        require "wait"
+        wait.make (function()
+		
+			second_line = help_array[2]
+			
+			-- Every help will start with this, can build keywords by looking at this line
+			sentinel = '{helpkeywords}Help Keywords : '
+			keywords = string.lower(string.sub(second_line, string.len(sentinel), string.len(second_line)))
+			filename = keywords:gsub('%W', '') .. ".txt"
+			first_letter = string.sub(filename,1,1)
+			base_dir = GetInfo(68)
+			new_dir = "helps\\" .. first_letter
+			mkdir_cmd = "/C mkdir " .. new_dir
+		
+			utils.shellexecute("cmd", mkdir_cmd, base_dir, "open", 0)
+			-- bit of a hack here. shellexecute seems to be async
+			-- need to wait enough time for the directory to be created 
+			wait.time(.1)
+
+			pathed_file = base_dir .. 'helps\\' .. first_letter .. '\\' .. filename;
+
+			help_file = assert(io.open(pathed_file, "w"))
+			ColourNote("white", "", "Opened " .. pathed_file .. " for write.")
+
+			for _, line in ipairs(help_array) do
+				if (string.match(line, '{helpbody}') or string.match(line, '{/helpbody}')) then goto continue end
+				line = string.gsub(line, '{helpkeywords}', '')
+				-- Note(line)
+				help_file:write(line .. "\r")
+				::continue::
 			end
-
-			SendNoEcho("echo Finished Parsing Helps")
-			SendNoEcho("tags helps off")
-		end)				
-	end
-	
-	function capture_line_from_help (name, line, args)
-		-- Note("Capturing " .. line)
-		table.insert(help_data, line)
-	end
-	
-	function stop_help_processing ()
-		EnableTriggerGroup("capture_single_help_group", false)	
-	end
-
-	
-	function trim_space(s)
-		return (s:gsub("^%s*(.-)%s*$", "%1"))
-	end
-	
-	--- Here be dragons... --- 
-	function print_to_file (help_array)
-		--ColourNote("white", "", "Printing Single Help:")
-		second_line = help_array[2]
+			help_file:close()
+		end)
+    end
 		
-		-- Every help will start with this, can build keywords by looking at this line
-		sentinel = '{helpkeywords}Help Keywords : '
-		keywords = string.lower(string.sub(second_line, string.len(sentinel), string.len(second_line)))
-		filename = keywords:gsub('%W', '') .. ".txt"
-		first_letter = string.sub(filename,1,1)
-		
-		pathed_file = 'helps\\' .. first_letter .. '\\' .. filename;
-
-		help_file = assert(io.open(pathed_file, "w"))
-		ColourNote("white", "", "Opened " .. pathed_file .. " for write.")
-
-		--ColourNote("white", "", "----------------------------------------------------------------------------")
-		for _, line in ipairs(help_array) do
-			if (string.match(line, '{helpbody}') or string.match(line, '{/helpbody}')) then goto continue end
-			line = string.gsub(line, '{helpkeywords}', '')
-			-- Note(line)
-			help_file:write(line .. "\r")
-			::continue::
-		end
-		help_file:close()
-		--ColourNote("white", "", "----------------------------------------------------------------------------")
-	end
 ]]>
 
 </script>
