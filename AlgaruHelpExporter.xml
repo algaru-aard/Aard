@@ -16,6 +16,32 @@
    requires="5.07"
    version="1.0"
    >
+<description trim="y">
+
+<![CDATA[
+--------------------------------------------------------------------------------
+Help File Exporter
+--------------------------------------------------------------------------------
+
+Use this plugin to copy help files to disk. 
+
+Usage::
+	capturehelp index <letter> - dump all the helps starting with <letter>
+	capturehelp help           - display this help
+
+ I recommend sitting still while doing this for best results.
+ Walking around will probably be ok.
+ Skills/spells will likely result in inconsistent output.
+ 
+ If you see an error like that says "No such file or directory", reinstall the
+ plugin and retry the command. It's likely an issue with creating the help 
+ directory and should be fixed on retry. 
+ 
+ If you see the above or any other issues, send Algaru a note or tell. Enjoy!    
+
+--------------------------------------------------------------------------------    
+]]> 
+</description>
 
 </plugin>
 
@@ -28,6 +54,18 @@
     regexp='y'
     script="begin_help_script">
   </alias>
+  
+  <alias match='^capturehelp help[ ]*$'  
+    enabled = 'y' 
+    ignore_case = 'y' 
+    sequence = '100' 
+    send_to='12'
+    regexp='y'
+	>
+	<send>
+		OnHelp()
+	</send>
+  </alias>
 </aliases>
 
 <triggers>
@@ -38,7 +76,7 @@
     name="start_single_help"
     group="capture_single_help_group"
     send_to="12"
-    sequence="1"
+    sequence="2"
     omit_from_output="y"
   >
   <send>
@@ -129,20 +167,17 @@
         SendNoEcho("index " .. args.letter)
         SendNoEcho("tags helps on")
         EnableTriggerGroup("capture_index_group", true)
-        -- assert(os.execute('mkdir helps\\' .. args.letter))
-        -- ColourNote("white", "", 'Created directory helps\\' .. args.letter)
         SendNoEcho("echo DONE WITH INDEX SEARCH")
     end
     
     function end_single_help (name, line, args)
         -- Note("Stopping Single Help Capture")
-        print_to_file(help_data)
+        print_to_file(array_copy(help_data))
         -- Note(table_dump(help_data))
         -- table.insert(list_of_helps, help_data)
     end
     
     function capture_string_from_index (name, line, args)
-        -- Note("Captured " .. args.help_string)
         table.insert(list_of_helps, trim_space(args.help_string))
     end
     
@@ -178,6 +213,14 @@
     function trim_space(s)
         return (s:gsub("^%s*(.-)%s*$", "%1"))
     end
+	
+	function array_copy(old)
+		new_array = {}
+		for _, value in ipairs(old) do
+			table.insert(new_array, value)
+		end
+		return new_array
+	end
     
     --- Here be dragons... --- 
     function print_to_file (help_array)
@@ -195,9 +238,9 @@
 			new_dir = "helps\\" .. first_letter
 			mkdir_cmd = "/C mkdir " .. new_dir
 		
-			utils.shellexecute("cmd", mkdir_cmd, base_dir, "open", 0)
 			-- bit of a hack here. shellexecute seems to be async
 			-- need to wait enough time for the directory to be created 
+			utils.shellexecute("cmd", mkdir_cmd, base_dir, "open", 0)
 			wait.time(.1)
 
 			pathed_file = base_dir .. 'helps\\' .. first_letter .. '\\' .. filename;
@@ -215,6 +258,18 @@
 			help_file:close()
 		end)
     end
+
+	function OnHelp ()
+		ColourNote ("LightSteelBlue", "", world.GetPluginInfo (world.GetPluginID (), 3))
+	end
+
+	function OnPluginEnable()
+		OnHelp()
+	end
+
+	function OnPluginInstall()
+		OnHelp()
+	end
 		
 ]]>
 
