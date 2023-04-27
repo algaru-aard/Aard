@@ -27,6 +27,7 @@ Use this plugin to copy help files to disk.
 
 Usage::
     capturehelp index <letter> - dump all the helps starting with <letter>
+    capturehelp updated <#>    - dump helps updated in the last # days
     capturehelp help           - display this help
 
  I recommend sitting still while doing this for best results.
@@ -54,7 +55,16 @@ Usage::
     regexp='y'
     script="begin_help_script">
   </alias>
-  
+
+  <alias match='^capturehelp updated (?<days>\d+)[ ]*$'  
+    enabled = 'y' 
+    ignore_case = 'y' 
+    sequence = '100' 
+    send_to='12'
+    regexp='y'
+    script="begin_updated_script">
+  </alias> 
+ 
   <alias match='^capturehelp help[ ]*$'  
     enabled = 'y' 
     ignore_case = 'y' 
@@ -137,6 +147,68 @@ Usage::
     >
   </trigger> 
   <trigger
+    enabled="n"
+    omit_from_output="y"
+    match="^DONE WITH UPDATED SEARCH$"
+    regexp="y"
+    name="stop_updated_capture"
+    group="capture_updated_group"
+    script="stop_updated_capture"
+    send_to="12"
+    sequence="1"
+    >
+   <send>
+    help_data = {}
+    EnableTrigger("end_single_help", true)
+    EnableTrigger("capture_line_from_help", true)
+  </send>
+  </trigger>
+  
+  <trigger
+    enabled="n"
+    match="^{helpsearch}$"
+    regexp="y"
+    name="capture_help_updated_search"
+    group="capture_updated_group"
+    send_to="12"
+    sequence="2"
+    omit_from_output="y"
+  >
+  <send>
+    help_data = {}
+    EnableTrigger("capture_name_from_updated", true)
+    EnableTrigger("stop_capture_help_updated_search", true)
+  </send>
+  </trigger> 
+
+  <trigger
+    enabled="n"
+    match="^{/helpsearch}$"
+    regexp="y"
+    name="stop_capture_help_updated_search"
+    group="capture_updated_group"
+    send_to="12"
+    sequence="2"
+    omit_from_output="y"
+  >
+  <send>
+    help_data = {}
+    EnableTrigger("capture_name_from_updated", false)
+  </send>
+  </trigger> 
+  
+  <trigger
+    enabled="n"
+    match="^(?<help_string>.{20}) \d{2}\/\d{2}\/\d{2} \d{2}:\d{2}  .{50}$"
+    regexp="y"
+    name="capture_name_from_updated"
+    script="capture_string_from_updated"
+    send_to="10"
+    sequence="100"
+    >
+  </trigger>
+  
+  <trigger
     enabled="y"
     omit_from_output="y"
     match="^Finished Parsing Helps$"
@@ -154,11 +226,21 @@ Usage::
 
     require "gmcphelper"
     -- Below has some helpers to dump arrays or tables
-    -- require "algaru_common"
+    require "algaru_common"
     
     list_of_helps = {}
     help_data = {}
     WAIT_TIME=1
+    
+    function begin_updated_script (name, line, args)
+        list_of_helps = {}
+        help_data = {}
+        days = args.days
+        EnableTriggerGroup("capture_updated_group", true)
+        SendNoEcho("tags helps on") 
+        Send("help updated " .. days)        
+        SendNoEcho("echo DONE WITH UPDATED SEARCH")
+    end
     
     function begin_help_script (name, line, args)
         list_of_helps = {}
@@ -171,17 +253,24 @@ Usage::
     end
     
     function end_single_help (name, line, args)
-        -- Note("Stopping Single Help Capture")
         print_to_file(array_copy(help_data))
-        -- Note(table_dump(help_data))
-        -- table.insert(list_of_helps, help_data)
     end
     
     function capture_string_from_index (name, line, args)
         table.insert(list_of_helps, trim_space(args.help_string))
     end
+
+    function capture_string_from_updated (name, line, args)
+        table.insert(list_of_helps, trim_space(args.help_string))
+    end
     
     function stop_index_capture (name, line, args)
+        EnableTriggerGroup("capture_index_group", false)
+        EnableTriggerGroup("capture_single_help_group", true)
+        process_helps()
+    end
+    
+    function stop_updated_capture ()
         EnableTriggerGroup("capture_index_group", false)
         EnableTriggerGroup("capture_single_help_group", true)
         process_helps()
@@ -201,7 +290,6 @@ Usage::
     end
     
     function capture_line_from_help (name, line, args)
-        -- Note("Capturing " .. line)
         table.insert(help_data, line)
     end
     
