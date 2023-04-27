@@ -226,7 +226,7 @@ Usage::
 
     require "gmcphelper"
     -- Below has some helpers to dump arrays or tables
-    require "algaru_common"
+    -- require "algaru_common"
     
     list_of_helps = {}
     help_data = {}
