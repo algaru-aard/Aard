@@ -99,9 +99,10 @@ Caveats:
   />
 
 <!-- For grabbing mob names --> 
+  <!-- Name is at the end of the string --> 
   <trigger
    enabled="n"
-   match="(You would stomp |No Problem! |Best run away from |Challenging |If you killed |You would be completely annihilated by |.+ would smite you for killing |.* would not approve of you killing )(?<mob>.*)[ ]?(into the ground|is weak compared to you|while you can|would be either very brave|\!|\?)"
+   match="(You would be completely annihilated by |.+ would smite you for killing |.* would not approve of you killing )(?<mob>.*)[!\.]"
    script="build_mob_list"
    omit_from_output="y"
    keep_evaluating = "y"
@@ -111,9 +112,10 @@ Caveats:
    group="mob_list_group"
   /> 
 
+  <!-- Name is in the middle of the string --> 
   <trigger
    enabled="n"
-   match="(?<mob>.*)( would be easy, but is it even worth the work out\?| looks a little worried about the idea\.| should be a fair fight!| snickers nervously\.| chuckles at the thought of you fighting .*\.| would crush you like a bug!| would dance on your grave!| says 'BEGONE FROM MY SIGHT unworthy!'| has divine protection\.| has already been challenged\.)$"
+   match="(You would stomp |No Problem! |Best run away from |Challenging )(?<mob>.*)[ ]*( into the ground| is weak compared to you| while you can| would be either very brave or very stupid)[!\.]"
    script="build_mob_list"
    omit_from_output="y"
    keep_evaluating = "y"
@@ -122,7 +124,23 @@ Caveats:
    regexp="y"
    group="mob_list_group"
   /> 
+
+
+  <!-- Name is at the front of the string --> 
+  <trigger
+   enabled="n"
+   match="(?<mob>.*)( would be easy, but is it even worth the work out\?| looks a little worried about the idea\.| should be a fair fight!| snickers nervously\.| chuckles at the thought of you fighting .*\.| would crush you like a bug!| would dance on your grave!| says 'BEGONE FROM MY SIGHT unworthy!'| has divine protection\.| has already been challenged\.)$"
+   script="build_mob_list"
+   omit_from_output="y"
+   keep_evaluating = "y"
+   name="build_mob_list_3"
+   sequence="100"
+   regexp="y"
+   group="mob_list_group"
+  /> 
   </triggers>
+
+
 
 
 <script>
@@ -206,6 +224,8 @@ function test_colors ()
 end
 
 function build_mob_list(name, line, args)
+    -- Note(line)
+    -- Note('"' .. args.mob .. '"')
     mob = strip_mob_flags(args.mob)
     -- Note("Identified " .. mob .. " as a mob")
     table.insert(mob_list, mob)
