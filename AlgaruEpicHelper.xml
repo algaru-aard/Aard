@@ -25,6 +25,10 @@
         </send>
     </alias>
     
+    <alias match='ifwp'  enabled = 'y' ignore_case = 'y' sequence = '100' send_to='10'>
+        <send>wear "maelstrom whip";dual "mystic staff icefallmana"
+        </send>
+    </alias>   
     <alias match='^titan[ ]+(?<damtype>cold|holy|negative|magic|pierce|water|reset)[ ]*$'  
         enabled = 'y' 
         ignore_case = 'y' 
@@ -34,45 +38,15 @@
         script="titan_change_weapon">
     </alias>
     
-    <alias match='^[ ]*axdir[ ]*$'  
+
+    <alias match='^[ ]*wfw[ ]*$'  
         enabled = 'y' 
         ignore_case = 'y' 
         sequence = '100' 
-        send_to='12'
+        send_to='10'
         regexp='y'
-        script="get_axaldra_direction">
-    </alias>
-    <alias match='^[ ]*axrun[ ]*$'  
-        enabled = 'y' 
-        ignore_case = 'y' 
-        sequence = '100' 
-        send_to='12'
-        regexp='y'
-        script="report_axaldra_run">
-    </alias>
-    <alias match='^[ ]*axtime[ ]*$'  
-        enabled = 'y' 
-        ignore_case = 'y' 
-        sequence = '100' 
-        send_to='12'
-        regexp='y'
-        script="report_axaldra_timer">
-    </alias>
-    <alias match='^[ ]*atc[ ]*$'  
-        enabled = 'y' 
-        ignore_case = 'y' 
-        sequence = '100' 
-        send_to='12'
-        regexp='y'
-        script="axaldra_touch_crystal">
-    </alias>
-    <alias match='^[ ]*touch crystal[ ]*$'  
-        enabled = 'y' 
-        ignore_case = 'y' 
-        sequence = '100' 
-        send_to='12'
-        regexp='y'
-        script="axaldra_touch_crystal">
+    >
+        <send>mapper goto 38463; wish for wealth</send>
     </alias>
 </aliases>
 
@@ -91,37 +65,25 @@
 
   <trigger
    enabled="y"
-   match="^You reach out and touch the crystal, which feels warm to the touch and is"
+   match="^The arcane magic rips through Aion's divine aura, rendering him vulnerable!$"
    regexp="y"
-   name="touch_crystal"
-   send_to="12"
+   name="trans_aion_vuln"
+   send_to="10"
    sequence="100"
-   script="axaldra_init"
   >
-  </trigger>
-
-
-  <trigger
-   enabled="y"
-   match="^Axaldra, the Eternal One lifts off from her perch and flies (?<dir>.*).$"
-   regexp="y"
-   name="set_axaldra_direction"
-   send_to="12"
-   sequence="100"
-   script="set_axaldra_direction"
-  >
-  </trigger>
+  <send>gtell Aion is now vulnerable!</send>
+  </trigger> 
   
   <trigger
    enabled="y"
-   match="^You hear a faint whisper in your ear, warning you not to return for 20 minutes.$"
+   match="^The pylon's energy source has been disrupted, and it is unable to fire!$"
    regexp="y"
-   name="end_blackclaw"
-   send_to="12"
+   name="trans_pylon_disrupt"
+   send_to="10"
    sequence="100"
-   script="end_blackclaw"
   >
-  </trigger>  
+  <send>gtell Pylon is disrupted! Clear troopers from rampart corners.</send>
+  </trigger> 
   
 </triggers>
 
@@ -163,114 +125,7 @@
             ColourNote("white", "", "Switch to using " , "red", "", newspell)
         end
     end
-    
-    function axaldra_touch_crystal ()
-        Send("touch crystal")
-        axaldra_init()
-    end
-    
-    function axaldra_init()
-        start_time = os.time()
-        SetVariable("axaldra_start_time", start_time)
-        SaveState()    
-    end
-    
-    function set_axaldra_direction (name, line, args)
-        direction = args.dir
-        SetVariable("axaldra_dir", direction)
-        SaveState()
-    end
-    
-    function get_axaldra_direction ()
-        if (in_blackclaw() == false) 
-        then
-            ColourNote("magenta", "", "You're not in Black Claw Crag!")
-            return
-        end
-        
-        dir = GetVariable("axaldra_dir") 
-        if (dir == nil or dir == "")
-        then
-            ColourNote("magenta", "", "You don't know where Axaldra is!")
-        else
-            ColourNote("magenta", "", "Axaldra is hovering to the " , "magenta", "", dir, "magenta", "", "!")
-        end
-    end
-    
-    function in_blackclaw()
-        area = tostring(gmcp("room.info.zone"))
-        return (area == 'blackclaw')
-    end
-    
-    function end_blackclaw()
-        SetVariable("axaldra_dir", "")
-        SaveState()
-        AddTimer("axaldra_timer", 0, 20, 0, "", timer_flag.Enabled + timer_flag.OneShot + timer_flag.Replace, "end_timer")
-        report_axaldra_runtime()
-    end
-    
-    function end_timer()
-       ColourNote("magenta", "", "You feel ready to challenge Axaldra again!") 
-    end
-    
-    function report_axaldra_runtime()
-        end_time = os.time()
-        start_time = GetVariable("axaldra_start_time")
-        if (start_time == nil or start_time == "" or start_time == 0)
-        then
-            ColourNote("magenta", "", "You have no idea how long that took!")
-        else 
-            ColourNote("magenta", "", "Your battle with Axaldra took " .. convert_time_to_string(end_time - start_time) .. "!")
-        end
-
-        SetVariable("axaldra_start_time", 0)
-        SaveState()
-    end
-    
-    function report_axaldra_timer()
-        time_remaining = GetTimerInfo("axaldra_timer", 13)
-        if (time_remaining == 0 or time_remaining == nil or time_remaining == "")
-        then
-            ColourNote("magenta", "", "You feel ready to challenge Axaldra again!") 
-        else
-            ColourNote("magenta", "", "You will be ready to challenge Axaldra again in ", 
-            "magenta", "", convert_time_to_string(time_remaining), "magenta", "", "!") 
-        end
-    end
-    
-    function report_axaldra_run()
-        if (in_blackclaw() == false) 
-        then
-            ColourNote("magenta", "", "You're not in Black Claw Crag!")
-            return
-        end
-        
-        start_time = GetVariable("axaldra_start_time")
-        if (start_time == nil or start_time == "" or start_time == 0)
-        then
-            ColourNote("magenta", "", "You don't remember when you started battling Axaldra!")
-            return
-        else 
-            end_time = os.time()
-            ColourNote("magenta", "", "You have been battling Axaldra for " .. convert_time_to_string(end_time - start_time) .. "!")
-        end
-    end
-    
-    function convert_time_to_string (input_time)
-        minutes = math.floor(input_time / 60)
-        seconds = math.floor(input_time % 60)
-        
-        formatted_time = ""
-        
-        if (minutes > 0) then
-            formatted_time = minutes .. "m"
-        end
-        
-        formatted_time = formatted_time .. seconds .. "s"
-        
-        return formatted_time
-    end
-
+   
 ]]>
 </script>
 
