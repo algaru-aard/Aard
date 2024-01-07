@@ -48,6 +48,15 @@
     >
         <send>mapper goto 38463; wish for wealth</send>
     </alias>
+    
+    <alias match='^windstrap[ ]*$'  
+        enabled = 'y' 
+        ignore_case = 'y' 
+        sequence = '100' 
+        send_to='12'
+        regexp='y'
+        script="winds_trap">
+    </alias>
 </aliases>
 
 
@@ -124,6 +133,19 @@
         else
             ColourNote("white", "", "Switch to using " , "red", "", newspell)
         end
+    end
+    
+    function winds_trap (name, line, args)
+        room_id = tonumber(gmcp("room.info.num"))
+        trap_commands = {
+            [39937] = "search cell",
+            [39943] = "push square",
+            [39948] = "search floor",
+            [39953] = "search sludge"
+        }
+
+        trap_cmd = trap_commands[room_id] or ""      
+        Send(trap_cmd)
     end
    
 ]]>
