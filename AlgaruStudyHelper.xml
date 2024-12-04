@@ -239,6 +239,7 @@ function strip_mob_flags(mob)
         ["%(Angry%)%s*"] = "",          ["%(Charmed%)%s*"] = "",
         ["%(C%)%s*"] = "",              ["%(Diseased%)%s*"] = "",
         ["%(D%)%s*"] = "",              ["%(Golden Aura%)%s*"] = "",
+        ["%(F%)%s*"] = "",              ["%(Flying%)%s*"] = "",
         ["%(G%)%s*"] = "",              ["%(Hidden%)%s*"] = "",
         ["%(H%)%s*"] = "",              ["%(Invis%)%s*"] = "",
         ["%(I%)%s*"] = "",              ["%(Marked%)%s*"] = "",
